@@ -19,15 +19,15 @@ import UIKit
 extension UIColor {
     static let glucoseTintColor = UIColor(red: 0 / 255, green: 176 / 255, blue: 255 / 255, alpha: 1)
     static let gridColor = UIColor(white: 193 / 255, alpha: 1)
-    static let nowColor = UIColor(white: 0.2, alpha: 1)
+    static let nowColor = UIColor(white: 0.4, alpha: 1)
     static let rangeColor = UIColor(red: 158/255, green: 215/255, blue: 245/255, alpha: 1)
-    static let backgroundColor = UIColor(white: 0.1, alpha: 1)
+    static let backgroundColor = UIColor(white: 0.15, alpha: 1)
 }
 
 extension SKLabelNode {
     static func basic(at position: CGPoint) -> SKLabelNode {
         let basic = SKLabelNode(text: "--")
-        basic.fontSize = 12
+        basic.fontSize = 15
         basic.fontName = "HelveticaNeue"
         basic.fontColor = .white
         basic.alpha = 0.8
@@ -137,7 +137,6 @@ class GlucoseChartScene: SKScene {
         didSet {
             if let range = unit?.highWatermarkRange, (0..<range.count).contains(visibleBg) {
                 WKInterfaceDevice.current().play(.success)
-
                 maxBGLabel.setScale(2.0)
                 maxBGLabel.run(SKAction.scale(to: 1.0, duration: 1.0), withKey: "highlight")
                 updateNodes(animated: true)
@@ -160,7 +159,7 @@ class GlucoseChartScene: SKScene {
         super.init(size: {
             switch WKInterfaceDevice.current().watchSize() {
             case .watch38mm:
-                return CGSize(width: 134, height: 68)
+                return CGSize(width: 134, height: 90)
             case .watch42mm:
                 return CGSize(width: 154, height: 86)
             }
@@ -260,7 +259,8 @@ class GlucoseChartScene: SKScene {
 
         historicalGlucose?.filter { $0.startDate > scaler.startDate }.forEach {
             let origin = scaler.point($0.startDate, $0.quantity.doubleValue(for: unit))
-            let size = CGSize(width: 2, height: 2)
+            let pointSize = visibleHours < 3 ? 2.5 : 2
+            let size = CGSize(width: pointSize, height: pointSize)
             let sprite = getSprite(forHash: $0.hashValue)
             sprite.color = .glucoseTintColor
             sprite.move(to: CGRect(origin: origin, size: size), animated: animated)
