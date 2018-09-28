@@ -17,13 +17,16 @@ final class WatchDataManager: NSObject, WCSessionDelegate {
 
     init(deviceManager: DeviceDataManager) {
         self.deviceManager = deviceManager
-
+        self.log = deviceManager.logger.forCategory("WatchDataManager")
+        
         super.init()
 
         NotificationCenter.default.addObserver(self, selector: #selector(updateWatch(_:)), name: .LoopDataUpdated, object: deviceManager.loopManager)
 
         watchSession?.delegate = self
         watchSession?.activate()
+        
+        configureBudgetUpdateObservation()
     }
 
     private var watchSession: WCSession? = {
@@ -294,6 +297,28 @@ final class WatchDataManager: NSObject, WCSessionDelegate {
         watchSession?.delegate = self
         watchSession?.activate()
     }
+    
+    private let log: CategoryLogger
+    
+    private var budgetUpdateObservationToken: NSKeyValueObservation?
+    
+    private var lastLoggedRemainingUpdates: Int?
+    
+    deinit {
+        budgetUpdateObservationToken?.invalidate()
+    }
+    
+    private func configureBudgetUpdateObservation() {
+        budgetUpdateObservationToken = WCSession.default.observe(\.remainingComplicationUserInfoTransfers, options: [.initial, .new]) { [weak self] session, change in
+            guard let self = self else { return }
+            if let newValue = change.newValue, newValue != self.lastLoggedRemainingUpdates {
+                self.log.debug(["remainingUpdates": newValue])
+                self.lastLoggedRemainingUpdates = newValue
+            }
+        }
+    }
+
+    
 }
 
 fileprivate extension GlucoseRangeSchedule.Override.Context {
