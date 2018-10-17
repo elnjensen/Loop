@@ -92,8 +92,30 @@ final class ComplicationController: NSObject, CLKComplicationDataSource {
         let timeText = CLKRelativeDateTextProvider(date: Date(), style: .natural, units: .minute)
 
         switch complication.family {
-        case .graphicCorner, .graphicCircular, .graphicRectangular, .graphicBezel:
+        case .graphicRectangular, .graphicBezel:
             template = nil
+        case .graphicCorner:
+            if #available(watchOSApplicationExtension 5.0, *) {
+                let cornerTemplate = CLKComplicationTemplateGraphicCornerStackText()
+                cornerTemplate.outerTextProvider = glucoseText
+                cornerTemplate.innerTextProvider = timeText
+                cornerTemplate.outerTextProvider.tintColor = .green
+                template = cornerTemplate
+            } else {
+                // Fallback on earlier versions
+                template = nil
+            }
+        case .graphicCircular:
+            if #available(watchOSApplicationExtension 5.0, *) {
+                let circularTemplate = CLKComplicationTemplateGraphicCircularOpenGaugeSimpleText()
+                circularTemplate.gaugeProvider = CLKSimpleGaugeProvider(style: .fill, gaugeColor: .green, fillFraction: 1)
+                circularTemplate.centerTextProvider = CLKSimpleTextProvider(text: "120")
+                circularTemplate.bottomTextProvider = CLKSimpleTextProvider(text: "↘︎")
+                template = circularTemplate
+            } else {
+                // Fallback on earlier versions
+                template = nil
+            }
         case .modularSmall:
             let modularSmall = CLKComplicationTemplateModularSmallStackText()
             modularSmall.line1TextProvider = glucoseText

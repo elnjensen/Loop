@@ -19,10 +19,24 @@ extension CLKComplicationTemplate {
             return nil
         }
 
-        return templateForFamily(family, glucose: glucose, unit: unit, date: context.glucoseDate, trend: context.glucoseTrend, eventualGlucose: context.eventualGlucose)
+        return templateForFamily(family, glucose: glucose, unit: unit, date: context.glucoseDate, trend: context.glucoseTrend, eventualGlucose: context.eventualGlucose, lastLoop: context.loopLastRunDate)
+    }
+    
+    static func loopColor(date: Date)-> UIColor {
+        // Set color of text to indicate Loop age; times are in seconds,
+        // negative if in the past.
+        let minutesAgo = (-date.timeIntervalSinceNow)/60.0
+        switch minutesAgo {
+        case 0..<5:
+            return .freshColor
+        case 5..<10:
+            return .agingColor
+        default:
+            return .staleColor
+        }
     }
 
-    static func templateForFamily(_ family: CLKComplicationFamily, glucose: HKQuantity, unit: HKUnit, date: Date?, trend: GlucoseTrend?, eventualGlucose: HKQuantity?) -> CLKComplicationTemplate? {
+    static func templateForFamily(_ family: CLKComplicationFamily, glucose: HKQuantity, unit: HKUnit, date: Date?, trend: GlucoseTrend?, eventualGlucose: HKQuantity?, lastLoop: Date?) -> CLKComplicationTemplate? {
 
         let formatter = NumberFormatter.glucoseFormatter(for: unit)
 
@@ -47,8 +61,58 @@ extension CLKComplicationTemplate {
         timeFormatter.timeStyle = .short
 
         switch family {
-        case .graphicCorner, .graphicCircular, .graphicRectangular, .graphicBezel:
+        case .graphicRectangular, .graphicBezel:
             return nil
+        case .graphicCorner:
+            // ***************************************
+            // ** Apple Watch Series 4 Complication **
+            // ***************************************
+            // Corner Text
+            // Outer Text: Current Glucose and Trend
+            // Inner Text: timeText
+            
+            if #available(watchOSApplicationExtension 5.0, *) {
+                let cornerTemplate = CLKComplicationTemplateGraphicCornerStackText()
+                cornerTemplate.outerTextProvider = glucoseAndTrendText
+                if let lastLoop = lastLoop {
+                    let loopTimeText = CLKRelativeDateTextProvider(date: lastLoop, style: .natural, units: .minute)
+                    loopTimeText.tintColor = loopColor(date: lastLoop)
+                    cornerTemplate.innerTextProvider = loopTimeText
+                } else {
+                    // Set by last glucose time if loop date not available:
+                    timeText.tintColor = loopColor(date: date)
+                    cornerTemplate.innerTextProvider = timeText
+                }
+                return cornerTemplate
+            } else {
+                // Fallback on earlier versions
+                return  nil
+            }
+        case .graphicCircular:
+            // ***************************************
+            // ** Apple Watch Series 4 Complication **
+            // ***************************************
+            // Circular Gauge
+            // Full Ring
+            // Current Glucose in Center, Trend Arrow Below
+            // * future enhancement - update gauge colors to reflect loop status, or time in range for the day
+            if #available(watchOSApplicationExtension 5.0, *) {
+                let circularTemplate = CLKComplicationTemplateGraphicCircularOpenGaugeSimpleText()
+                var ringColor: UIColor
+                if let lastLoop = lastLoop {
+                    ringColor = loopColor(date: lastLoop)
+                } else {
+                    // Set by last glucose time if loop date not available:
+                    ringColor = loopColor(date: date)
+                }
+                circularTemplate.gaugeProvider = CLKSimpleGaugeProvider(style: .fill, gaugeColor: ringColor, fillFraction: 1)
+                circularTemplate.centerTextProvider = CLKSimpleTextProvider(text: glucoseString)
+                circularTemplate.bottomTextProvider = CLKSimpleTextProvider(text: (trend?.symbol ?? " "))
+                return circularTemplate
+            } else {
+                // Fallback on earlier versions
+                return nil
+            }
         case .modularSmall:
             let template = CLKComplicationTemplateModularSmallStackText()
             template.line1TextProvider = glucoseAndTrendText
