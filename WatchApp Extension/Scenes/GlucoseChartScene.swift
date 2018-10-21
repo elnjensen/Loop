@@ -124,7 +124,8 @@ class GlucoseChartScene: SKScene {
     let log = OSLog(category: "GlucoseChartScene")
 
     var textInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-
+    var initialHeight: CGFloat?
+    
     var unit: HKUnit?
     var correctionRange: GlucoseRangeSchedule?
     var historicalGlucose: [SampleValue]? {
@@ -214,13 +215,14 @@ class GlucoseChartScene: SKScene {
 
         switch width {
         case let x where x < 150:  // 38mm
-            height = 68
+            height = 90
         case let x where x > 180:  // 44mm
-            height = 106
+            height = 116
         default:
-            height = 86
+            height = 108
         }
-
+        
+        self.initialHeight = height
         super.init(size: CGSize(width: screen.width, height: height))
     }
 
@@ -327,6 +329,9 @@ class GlucoseChartScene: SKScene {
             yScale: size.height / CGFloat(yRange.upperBound.doubleValue(for: unit) - yRange.lowerBound.doubleValue(for: unit))
         )
 
+        hoursLabel.position = CGPoint(x: textInsets.left, y: size.height - textInsets.top)
+        maxBGLabel.position = CGPoint(x: size.width - textInsets.right, y: size.height - textInsets.top)
+        
         let numberFormatter = NumberFormatter.glucoseFormatter(for: unit)
         minBGLabel.text = numberFormatter.string(from: yRange.lowerBound.doubleValue(for: unit))
         maxBGLabel.text = numberFormatter.string(from: yRange.upperBound.doubleValue(for: unit))

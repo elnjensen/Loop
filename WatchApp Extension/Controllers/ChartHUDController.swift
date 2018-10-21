@@ -28,6 +28,30 @@ final class ChartHUDController: HUDInterfaceController, WKCrownDelegate {
         scene.visibleDuration = .hours(6)
     }
     private let scene = GlucoseChartScene()
+    
+    var hidden: Bool = false
+
+    @IBOutlet var spacingLabel: WKInterfaceLabel!
+    @IBAction func toggleLabels(_ sender: Any) {
+        
+        guard let sceneHeight = scene.initialHeight else {
+            return
+        }
+        var sceneFactor: CGFloat // Factor by which to increase/decrease scene height
+        if hidden {
+            hidden = false
+            sceneFactor = 1.0
+        } else {
+            hidden = true
+            sceneFactor = 1.15
+        }
+        glucoseScene.setHeight(sceneHeight * sceneFactor)
+        basalLabel.setHidden(hidden)
+        iobLabel.setHidden(hidden)
+        cobLabel.setHidden(hidden)
+        scene.setNeedsUpdate()
+    }
+
     private var timer: Timer? {
         didSet {
             oldValue?.invalidate()
@@ -47,7 +71,9 @@ final class ChartHUDController: HUDInterfaceController, WKCrownDelegate {
                 self?.updateGlucoseChart()
             }
         }
-
+        if let height = scene.initialHeight {
+            glucoseScene.setHeight(height)
+        }
         glucoseScene.presentScene(scene)
     }
 
@@ -120,12 +146,12 @@ final class ChartHUDController: HUDInterfaceController, WKCrownDelegate {
         iobLabel.setHidden(true)
         if let activeInsulin = activeContext.iob, let valueStr = insulinFormatter.string(from: activeInsulin) {
             iobLabel.setText(String(format: NSLocalizedString(
-                    "IOB %1$@ U",
+                    "%1$@ U",
                     comment: "The subtitle format describing units of active insulin. (1: localized insulin value description)"
                 ),
                 valueStr
             ))
-            iobLabel.setHidden(false)
+            iobLabel.setHidden(hidden)
         }
 
         cobLabel.setHidden(true)
@@ -136,29 +162,29 @@ final class ChartHUDController: HUDInterfaceController, WKCrownDelegate {
             let valueStr = carbFormatter.string(from: carbsOnBoard)
 
             cobLabel.setText(String(format: NSLocalizedString(
-                    "COB %1$@ g",
+                    "%1$@ g",
                     comment: "The subtitle format describing grams of active carbs. (1: localized carb value description)"
                 ),
                 valueStr!
             ))
-            cobLabel.setHidden(false)
+            cobLabel.setHidden(hidden)
         }
 
         basalLabel.setHidden(true)
         if let tempBasal = activeContext.lastNetTempBasalDose {
             let basalFormatter = NumberFormatter()
             basalFormatter.numberStyle = .decimal
-            basalFormatter.minimumFractionDigits = 1
-            basalFormatter.maximumFractionDigits = 3
+            basalFormatter.minimumFractionDigits = 0
+            basalFormatter.maximumFractionDigits = 1
             basalFormatter.positivePrefix = basalFormatter.plusSign
             let valueStr = basalFormatter.string(from: tempBasal)
 
             let basalLabelText = String(format: NSLocalizedString(
-                "%1$@ U/hr",
+                "%1$@U/hr",
                 comment: "The subtitle format describing the current temp basal rate. (1: localized basal rate description)"),
                                       valueStr!)
             basalLabel.setText(basalLabelText)
-            basalLabel.setHidden(false)
+            basalLabel.setHidden(hidden)
         }
 
         if glucoseScene.isPaused {

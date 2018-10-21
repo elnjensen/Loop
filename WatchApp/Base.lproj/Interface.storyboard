@@ -363,11 +363,11 @@
                     <items>
                         <group width="1" alignment="left" id="z0r-4k-Z7h">
                             <items>
-                                <group width="0.25" alignment="left" layout="vertical" id="Z7g-qg-0wK">
+                                <group width="0.25" alignment="left" layout="overlap" id="Z7g-qg-0wK">
                                     <items>
                                         <imageView alignment="center" image="loop_unknown" contentMode="center" id="ifw-dh-btK"/>
-                                        <timer width="1" alignment="left" hidden="YES" textAlignment="center" enabled="YES" format="abbreviated" previewedSeconds="500" id="P2b-9P-EbP">
-                                            <fontDescription key="font" style="UICTFontTextStyleCaption1"/>
+                                        <timer width="1" alignment="left" verticalAlignment="center" hidden="YES" textAlignment="center" enabled="YES" previewedSeconds="500" id="P2b-9P-EbP">
+                                            <fontDescription key="font" style="UICTFontTextStyleCaption2"/>
                                             <calendarUnit key="units" minute="YES"/>
                                         </timer>
                                     </items>
@@ -386,25 +386,34 @@
                                             </items>
                                             <variation key="device=watch42mm" height="29"/>
                                         </group>
-                                        <label width="1" alignment="left" verticalAlignment="bottom" text="---" textAlignment="right" minimumScaleFactor="0.5" id="U5L-zt-Ck7">
-                                            <fontDescription key="font" style="UICTFontTextStyleCaption1"/>
-                                        </label>
                                     </items>
                                     <variation key="device=watch40mm" widthAdjustment="-8.5"/>
                                     <variation key="device=watch44mm" widthAdjustment="-9.5"/>
                                 </group>
                             </items>
                         </group>
-                        <group width="1" height="86" alignment="left" layout="overlap" id="GqJ-yv-NKQ">
+                        <group width="1" alignment="left" layout="overlap" id="GqJ-yv-NKQ">
                             <items>
-                                <spriteKitScene width="1" height="1" alignment="center" verticalAlignment="center" scene="GlucoseChartScene" id="9BI-AC-l6c"/>
+                                <spriteKitScene width="1" height="100" alignment="center" verticalAlignment="center" scene="GlucoseChartScene" id="9BI-AC-l6c">
+                                    <gestureRecognizers>
+                                        <tapGestureRecognizer delaysTouchesEnded="NO" numberOfTapsRequired="2" id="Bij-xR-j0H">
+                                            <connections>
+                                                <action selector="toggleLabels:" destination="v5b-sO-bb8" id="bsp-vc-wnl"/>
+                                            </connections>
+                                        </tapGestureRecognizer>
+                                    </gestureRecognizers>
+                                    <variation key="device=watch38mm" height="68"/>
+                                    <variation key="device=watch44mm" height="106"/>
+                                </spriteKitScene>
                             </items>
-                            <variation key="device=watch38mm" height="68"/>
-                            <variation key="device=watch44mm" height="106"/>
                         </group>
+                        <label width="1" alignment="left" textAlignment="center" id="cXq-nD-Ruf"/>
                         <group width="1" alignment="center" id="rSt-1g-97T">
                             <items>
                                 <label alignment="left" verticalAlignment="bottom" text="---" minimumScaleFactor="0.5" id="PI8-dB-Ykw" userLabel="IOB Label">
+                                    <fontDescription key="font" style="UICTFontTextStyleCaption1"/>
+                                </label>
+                                <label alignment="center" verticalAlignment="bottom" text="---" textAlignment="right" minimumScaleFactor="0.5" id="U5L-zt-Ck7">
                                     <fontDescription key="font" style="UICTFontTextStyleCaption1"/>
                                 </label>
                                 <label alignment="right" verticalAlignment="bottom" text="---" minimumScaleFactor="0.5" id="gC1-LZ-QMz" userLabel="COB Label">
@@ -443,6 +452,7 @@
                         <outlet property="iobLabel" destination="PI8-dB-Ykw" id="S3x-RE-C7L"/>
                         <outlet property="loopHUDImage" destination="ifw-dh-btK" id="Bc0-er-dfe"/>
                         <outlet property="loopTimer" destination="P2b-9P-EbP" id="5xU-ne-x8i"/>
+                        <outlet property="spacingLabel" destination="cXq-nD-Ruf" id="CtO-Wz-RUl"/>
                     </connections>
                 </controller>
             </objects>
