@@ -155,20 +155,20 @@ final class ChartHUDController: HUDInterfaceController, WKCrownDelegate {
         }
 
         cobLabel.setHidden(true)
-        if let carbsOnBoard = activeContext.cob {
-            let carbFormatter = NumberFormatter()
-            carbFormatter.numberStyle = .decimal
-            carbFormatter.maximumFractionDigits = 0
-            let valueStr = carbFormatter.string(from: carbsOnBoard)
+        let carbsOnBoard = activeContext.cob ?? 0
+        let carbFormatter = NumberFormatter()
+        carbFormatter.numberStyle = .decimal
+        carbFormatter.maximumFractionDigits = 0
+        let valueStr = carbFormatter.string(from: carbsOnBoard)
 
-            cobLabel.setText(String(format: NSLocalizedString(
-                    "%1$@ g",
-                    comment: "The subtitle format describing grams of active carbs. (1: localized carb value description)"
-                ),
-                valueStr!
-            ))
-            cobLabel.setHidden(hidden)
-        }
+        cobLabel.setText(String(format: NSLocalizedString(
+                "%1$@ g",
+                comment: "The subtitle format describing grams of active carbs. (1: localized carb value description)"
+            ),
+            valueStr!
+        ))
+        cobLabel.setHidden(hidden)
+        
 
         basalLabel.setHidden(true)
         if let tempBasal = activeContext.lastNetTempBasalDose {
