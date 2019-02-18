@@ -1,0 +1,7 @@
+github "kdisimone/LoopKit" "holly"
+github "kdisimone/CGMBLEKit" "holly"
+github "i-schuetz/SwiftCharts" == 0.6.2
+github "kdisimone/dexcom-share-client-swift" "holly"
+github "kdisimone/G4ShareSpy" "holly"
+github "kdisimone/rileylink_ios" "holly"
+github "LoopKit/Amplitude-iOS" "decreepify"
