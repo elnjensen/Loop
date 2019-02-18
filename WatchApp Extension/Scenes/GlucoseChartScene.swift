@@ -241,7 +241,7 @@ class GlucoseChartScene: SKScene {
 
         data.correctionRange?.quantityBetween(start: spannedInterval.start, end: spannedInterval.end).forEach { range in
             let (sprite, created) = getSprite(forHash: range.chartHashValue)
-            sprite.color = UIColor.glucose.withAlphaComponent(activeOverride != nil ? 0.2 : 0.3)
+            sprite.color = UIColor.glucose.withAlphaComponent(activeOverride != nil ? 0.5 : 0.7)
             sprite.zPosition = NodePlane.ranges.zPosition
             sprite.move(to: scaler.rect(for: range, unit: unit), animated: !created)
             inactiveNodes.removeValue(forKey: range.chartHashValue)
@@ -252,7 +252,7 @@ class GlucoseChartScene: SKScene {
         // extends to the end of the visible window.
         if let range = activeOverride {
             let (sprite1, created) = getSprite(forHash: range.chartHashValue)
-            sprite1.color = UIColor.glucose.withAlphaComponent(0.4)
+            sprite1.color = UIColor.glucose.withAlphaComponent(0.7)
             sprite1.zPosition = NodePlane.overrideRanges.zPosition
             sprite1.move(to: scaler.rect(for: range, unit: unit), animated: !created)
             inactiveNodes.removeValue(forKey: range.chartHashValue)
@@ -261,7 +261,7 @@ class GlucoseChartScene: SKScene {
                 let extendedDuration = spannedInterval.end.timeIntervalSince(range.start)
                 let extendedRange = TemporaryScheduleOverride(context: range.context, settings: range.settings, startDate: range.start, duration: .finite(extendedDuration))
                 let (sprite2, created) = getSprite(forHash: extendedRange.chartHashValue)
-                sprite2.color = UIColor.glucose.withAlphaComponent(0.25)
+                sprite2.color = UIColor.glucose.withAlphaComponent(0.5)
                 sprite2.zPosition = NodePlane.overrideRanges.zPosition
                 sprite2.move(to: scaler.rect(for: extendedRange, unit: unit), animated: !created)
                 inactiveNodes.removeValue(forKey: extendedRange.chartHashValue)
@@ -270,7 +270,7 @@ class GlucoseChartScene: SKScene {
 
         data.historicalGlucose?.filter { scaler.dates.contains($0.startDate) }.forEach {
             let center = scaler.point($0.startDate, $0.quantity.doubleValue(for: unit))
-            let size = CGSize(width: 2, height: 2)
+            let size = CGSize(width: 3, height: 3)
             let origin = CGPoint(x: center.x - size.width / 2, y: center.y - size.height / 2)
             let (sprite, created) = getSprite(forHash: $0.chartHashValue)
             sprite.color = .glucose
