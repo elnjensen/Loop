@@ -436,7 +436,7 @@ extension DeviceDataManager: PumpManagerDelegate {
             //////
             // update BG correction range overrides via NS
             // this call may be more appropriate somewhere
-            let allowremoteTempTargets : Bool = true
+            let allowremoteTempTargets : Bool = false
             if allowremoteTempTargets == true {self.setNStemp()}
             /////
             
