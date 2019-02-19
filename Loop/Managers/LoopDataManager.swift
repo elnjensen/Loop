@@ -71,7 +71,7 @@ final class LoopDataManager {
             healthStore: healthStore,
             cacheStore: cacheStore,
             defaultAbsorptionTimes: (
-                fast: TimeInterval(hours: 0.5),
+                fast: TimeInterval(hours: 1.0),
                 medium: TimeInterval(hours: 2.5),
                 slow: TimeInterval(hours: 4)
             ),
