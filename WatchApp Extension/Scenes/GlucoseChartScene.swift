@@ -231,7 +231,7 @@ class GlucoseChartScene: SKScene {
         minBGLabel.move(to: CGPoint(x: size.width - textInsets.right, y: textInsets.bottom))
         maxBGLabel.text = numberFormatter.string(from: glucoseRange.upperBound.doubleValue(for: unit))
         maxBGLabel.move(to: CGPoint(x: size.width - textInsets.right, y: size.height - textInsets.top))
-        hoursLabel.text = dateFormatter.string(from: visibleDuration)
+        hoursLabel.text = dateFormatter.string(from: visibleDuration/2)
         hoursLabel.move(to: CGPoint(x: textInsets.left, y: size.height - textInsets.top))
 
         // Keep track of the nodes we started this pass with so we can expire obsolete nodes at the end
