@@ -13,7 +13,7 @@ public struct LoopSettings: Equatable {
 
     public let dynamicCarbAbsorptionEnabled = true
 
-    public static let defaultCarbAbsorptionTimes: CarbStore.DefaultAbsorptionTimes = (fast: .hours(2), medium: .hours(3), slow: .hours(4))
+    public static let defaultCarbAbsorptionTimes: CarbStore.DefaultAbsorptionTimes = (fast: .hours(1), medium: .hours(2.5), slow: .hours(4))
 
     public var glucoseTargetRangeSchedule: GlucoseRangeSchedule?
 
