@@ -152,6 +152,7 @@ final class WatchDataManager: NSObject {
             context.reservoir = reservoir?.unitVolume
             context.loopLastRunDate = manager.lastLoopCompleted
             context.recommendedBolusDose = state.recommendedBolus?.recommendation.amount
+            context.pendingInsulin = state.recommendedBolus?.recommendation.pendingInsulin
             context.cob = state.carbsOnBoard?.quantity.doubleValue(for: HKUnit.gram())
             context.glucoseTrendRawValue = self.deviceManager.sensorState?.trendType?.rawValue
 
