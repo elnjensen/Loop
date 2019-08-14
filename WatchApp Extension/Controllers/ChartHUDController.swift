@@ -164,9 +164,9 @@ final class ChartHUDController: HUDInterfaceController, WKCrownDelegate {
             let cell = table.rowController(at: row.rawValue) as! HUDRowController
             cell.setTitle(row.title)
             cell.setIsLastRow(row.isLast)
-            if #available(watchOSApplicationExtension 5.0, *) {
-                cell.setContentInset(systemMinimumLayoutMargins)
-            }
+//            if #available(watchOSApplicationExtension 5.0, *) {
+//                cell.setContentInset(systemMinimumLayoutMargins)
+//            }
 
             switch row {
             case .iob:
