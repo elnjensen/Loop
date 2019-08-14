@@ -327,6 +327,9 @@
                                     <color key="textColor" name="insulin"/>
                                     <fontDescription key="font" style="UICTFontTextStyleBody"/>
                                 </label>
+                                <label alignment="center" textAlignment="center" id="Ftj-68-XkQ">
+                                    <color key="textColor" name="insulin"/>
+                                </label>
                                 <group width="1" alignment="center" verticalAlignment="bottom" id="8jd-ZY-t1c">
                                     <items>
                                         <button width="1" height="40" alignment="left" title="Bolus" id="Qsq-p5-1J0">
@@ -346,6 +349,7 @@
                         </group>
                     </items>
                     <connections>
+                        <outlet property="pendingValueLabel" destination="Ftj-68-XkQ" id="cN0-nU-uHw"/>
                         <outlet property="recommendedValueLabel" destination="lDp-Dk-msn" id="B0r-C8-lMN"/>
                         <outlet property="valueLabel" destination="mpK-zY-UvA" id="pM7-ih-eRu"/>
                     </connections>
