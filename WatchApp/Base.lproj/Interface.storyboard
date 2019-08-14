@@ -356,6 +356,30 @@
                                     <variation key="device=watch40mm" heightAdjustment="-2"/>
                                     <variation key="device=watch44mm" heightAdjustment="-4"/>
                                 </group>
+                                <label alignment="center" text="UNITS" textAlignment="center" numberOfLines="3" id="rV7-d9-n6u">
+                                    <color key="textColor" name="insulin"/>
+                                    <fontDescription key="font" style="UICTFontTextStyleCaption2"/>
+                                </label>
+                                <label height="41" alignment="center" textAlignment="center" numberOfLines="2" id="lDp-Dk-msn">
+                                    <color key="textColor" name="insulin"/>
+                                    <fontDescription key="font" style="UICTFontTextStyleBody"/>
+                                </label>
+                                <label alignment="center" textAlignment="center" id="Ftj-68-XkQ">
+                                    <color key="textColor" name="insulin"/>
+                                </label>
+                                <group width="1" alignment="center" verticalAlignment="bottom" id="8jd-ZY-t1c">
+                                    <items>
+                                        <button width="1" height="40" alignment="left" title="Bolus" id="Qsq-p5-1J0">
+                                            <color key="backgroundColor" name="insulin"/>
+                                            <fontDescription key="font" type="system" weight="semibold" pointSize="15"/>
+                                            <connections>
+                                                <action selector="deliver" destination="zTm-yH-n4A" id="jrt-Ee-Tbn"/>
+                                            </connections>
+                                        </button>
+                                    </items>
+                                    <variation key="device=watch40mm" radius="20" widthAdjustment="-8"/>
+                                    <variation key="device=watch44mm" radius="20" widthAdjustment="-8"/>
+                                </group>
                             </items>
                         </group>
                     </items>
@@ -365,6 +389,7 @@
                         <outlet property="bolusConfirmationInterfaceScene" destination="51w-wc-Ew6" id="LRV-ba-MVg"/>
                         <outlet property="decrementButton" destination="d24-et-2S4" id="jeJ-WQ-iPr"/>
                         <outlet property="incremementButton" destination="JXe-b7-7Ef" id="O37-g7-qlY"/>
+                        <outlet property="pendingValueLabel" destination="Ftj-68-XkQ" id="cN0-nU-uHw"/>
                         <outlet property="recommendedValueLabel" destination="lDp-Dk-msn" id="B0r-C8-lMN"/>
                         <outlet property="unitLabel" destination="rV7-d9-n6u" id="xbA-qU-5LG"/>
                         <outlet property="valueLabel" destination="mpK-zY-UvA" id="pM7-ih-eRu"/>

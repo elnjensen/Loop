@@ -108,6 +108,17 @@ final class BolusInterfaceController: WKInterfaceController, IdentifiableClass {
         }
     }
 
+    private var maxPickerValue = 0
+
+    /// 1.25
+    @IBOutlet weak var valueLabel: WKInterfaceLabel!
+
+    /// REC: 2.25 U
+    @IBOutlet weak var recommendedValueLabel: WKInterfaceLabel!
+    
+    /// (Pending: 0.3 U)
+    @IBOutlet weak var pendingValueLabel: WKInterfaceLabel!
+    
     override func awake(withContext context: Any?) {
         super.awake(withContext: context)
 
@@ -119,6 +130,9 @@ final class BolusInterfaceController: WKInterfaceController, IdentifiableClass {
 
             if let valueString = formatter.string(from: recommendedBolus) {
                 recommendedValueLabel.setText(String(format: NSLocalizedString("Rec: %@ U", comment: "The label and value showing the recommended bolus"), valueString).localizedUppercase)
+            }
+            if let pendingInsulin = context.pendingInsulin, let pendingValueString = formatter.string(from: pendingInsulin) {
+                pendingValueLabel.setText(String(format: NSLocalizedString("(Pending: %@ U)", comment: "The label and value showing the pending insulin"), pendingValueString).localizedUppercase)
             }
         }
 
