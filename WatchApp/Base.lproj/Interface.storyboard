@@ -323,13 +323,17 @@
                                     <color key="textColor" name="insulin"/>
                                     <fontDescription key="font" style="UICTFontTextStyleCaption2"/>
                                 </label>
-                                <label height="41" alignment="center" textAlignment="center" numberOfLines="2" id="lDp-Dk-msn">
-                                    <color key="textColor" name="insulin"/>
-                                    <fontDescription key="font" style="UICTFontTextStyleBody"/>
-                                </label>
-                                <label alignment="center" textAlignment="center" id="Ftj-68-XkQ">
-                                    <color key="textColor" name="insulin"/>
-                                </label>
+                                <group width="1" alignment="center" layout="vertical" spacing="3" id="pOM-S8-9Vr">
+                                    <items>
+                                        <label alignment="center" textAlignment="center" numberOfLines="2" id="lDp-Dk-msn">
+                                            <color key="textColor" name="insulin"/>
+                                            <fontDescription key="font" style="UICTFontTextStyleBody"/>
+                                        </label>
+                                        <label alignment="center" textAlignment="center" numberOfLines="0" id="Ftj-68-XkQ">
+                                            <color key="textColor" name="insulin"/>
+                                        </label>
+                                    </items>
+                                </group>
                                 <group width="1" alignment="center" verticalAlignment="bottom" id="8jd-ZY-t1c">
                                     <items>
                                         <button width="1" height="40" alignment="left" title="Bolus" id="Qsq-p5-1J0">
@@ -350,7 +354,6 @@
                     </items>
                     <connections>
                         <outlet property="pendingValueLabel" destination="Ftj-68-XkQ" id="cN0-nU-uHw"/>
-                        <outlet property="recommendedValueLabel" destination="lDp-Dk-msn" id="B0r-C8-lMN"/>
                         <outlet property="valueLabel" destination="mpK-zY-UvA" id="pM7-ih-eRu"/>
                     </connections>
                 </controller>
