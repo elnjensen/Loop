@@ -30,7 +30,7 @@ final class BolusInterfaceController: WKInterfaceController, IdentifiableClass {
 
             switch bolusValue {
             case let x where x < 1:
-                formatter.minimumFractionDigits = 3
+                formatter.minimumFractionDigits = 2
             case let x where x < 10:
                 formatter.minimumFractionDigits = 2
             default:
@@ -71,6 +71,16 @@ final class BolusInterfaceController: WKInterfaceController, IdentifiableClass {
         return formatter
     }()
 
+    private lazy var insulinFormatter: NumberFormatter = {
+        let insulinFormatter = NumberFormatter()
+        insulinFormatter.numberStyle = .decimal
+        insulinFormatter.minimumIntegerDigits = 1
+        insulinFormatter.minimumFractionDigits = 1
+        insulinFormatter.maximumFractionDigits = 2
+
+        return insulinFormatter
+    }()
+
     private var maxPickerValue = 0
 
     /// 1.25
@@ -91,11 +101,17 @@ final class BolusInterfaceController: WKInterfaceController, IdentifiableClass {
         if let context = context as? WatchContext, let recommendedBolus = context.recommendedBolusDose {
             pickerValue = pickerValueFromBolusValue(recommendedBolus)
 
-            if let valueString = formatter.string(from: recommendedBolus) {
-                recommendedValueLabel.setText(String(format: NSLocalizedString("Rec: %@ U", comment: "The label and value showing the recommended bolus"), valueString).localizedUppercase)
-            }
-            if let pendingInsulin = context.pendingInsulin, let pendingValueString = formatter.string(from: pendingInsulin) {
-                pendingValueLabel.setText(String(format: NSLocalizedString("(Pending: %@ U)", comment: "The label and value showing the pending insulin"), pendingValueString).localizedUppercase)
+//            if let valueString = formatter.string(from: recommendedBolus) {
+//                recommendedValueLabel.setText(String(format: NSLocalizedString("Rec: %@ U", comment: "The label and value showing the recommended bolus"), valueString).localizedUppercase)
+//            }
+            
+            if let iob = context.iob, let iobString = insulinFormatter.string(from: iob) {
+                if let pendingInsulin = context.pendingInsulin, pendingInsulin > 0, let pendingValueString = insulinFormatter.string(from: pendingInsulin) {
+                    pendingValueLabel.setText(String(format: NSLocalizedString("IOB %@ U\n (Pending: %@ U)", comment: "The label and value showing insulin on board and pending insulin"), iobString, pendingValueString))
+
+                } else {
+                    pendingValueLabel.setText(String(format: NSLocalizedString("IOB %@ U", comment: "The label and value showing insulin on board"), iobString))
+                }
             }
         }
 
