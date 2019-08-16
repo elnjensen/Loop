@@ -458,6 +458,7 @@
                         <outlet property="glucoseScene" destination="9BI-AC-l6c" id="O4a-P8-cHI"/>
                         <outlet property="loopHUDImage" destination="ifw-dh-btK" id="Bc0-er-dfe"/>
                         <outlet property="table" destination="Atz-83-hgn" id="yzw-fm-hhk"/>
+                        <segue destination="3OC-Ta-4si" kind="relationship" relationship="nextPage" id="89a-hI-pWx"/>
                     </connections>
                 </controller>
             </objects>
@@ -548,6 +549,56 @@
                 </notificationController>
             </objects>
             <point key="canvasLocation" x="38" y="1153"/>
+        </scene>
+        <!--Loop-->
+        <scene sceneID="4bS-yh-9Js">
+            <objects>
+                <controller identifier="WorkoutHUDController" title="Loop" id="3OC-Ta-4si" customClass="WorkoutHUDController" customModule="WatchApp_Extension">
+                    <items>
+                        <group width="1" alignment="left" id="pVK-kB-Nhe">
+                            <items>
+                                <group width="0.25" alignment="left" layout="vertical" id="ul6-QE-k1T">
+                                    <items>
+                                        <imageView alignment="center" image="loop_unknown" contentMode="center" id="tia-vL-EzN"/>
+                                    </items>
+                                </group>
+                                <group width="0.75" alignment="left" layout="vertical" id="9Ls-eS-itn">
+                                    <items>
+                                        <group width="1" height="26" alignment="left" id="w0y-br-Pgj">
+                                            <items>
+                                                <label height="1" alignment="left" hidden="YES" text="---" textAlignment="center" id="mZN-zM-ZnP">
+                                                    <fontDescription key="font" type="system" weight="light" pointSize="24"/>
+                                                </label>
+                                                <label height="1" alignment="right" hidden="YES" text="---" textAlignment="center" id="DBQ-JF-oss">
+                                                    <color key="textColor" red="1" green="1" blue="1" alpha="0.80000000000000004" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <fontDescription key="font" type="system" weight="light" pointSize="24"/>
+                                                </label>
+                                            </items>
+                                            <variation key="device=watch42mm" height="29"/>
+                                        </group>
+                                    </items>
+                                    <variation key="device=watch40mm" widthAdjustment="-8.5"/>
+                                    <variation key="device=watch44mm" widthAdjustment="-9.5"/>
+                                </group>
+                            </items>
+                        </group>
+                        <group width="1" alignment="left" id="RYh-Uf-0EX">
+                            <items>
+                                <label alignment="left" text="00:00:00" id="3I2-RZ-Y9B">
+                                    <fontDescription key="font" style="UICTFontTextStyleHeadline"/>
+                                </label>
+                            </items>
+                        </group>
+                    </items>
+                    <connections>
+                        <outlet property="elapsedTimeLabel" destination="3I2-RZ-Y9B" id="Xhk-v5-ZgA"/>
+                        <outlet property="eventualGlucoseLabel" destination="DBQ-JF-oss" id="1ss-eg-XFt"/>
+                        <outlet property="glucoseLabel" destination="mZN-zM-ZnP" id="FzC-Pa-a4Z"/>
+                        <outlet property="loopHUDImage" destination="tia-vL-EzN" id="VBo-r9-eZa"/>
+                    </connections>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="357" y="1122"/>
         </scene>
         <!--OverrideSelectionController-->
         <scene sceneID="xuA-WA-jUi">
