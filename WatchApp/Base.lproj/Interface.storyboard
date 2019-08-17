@@ -521,7 +521,7 @@
                     </connections>
                 </controller>
             </objects>
-            <point key="canvasLocation" x="706" y="702"/>
+            <point key="canvasLocation" x="342" y="1152"/>
         </scene>
         <!--Static Notification Interface Controller-->
         <scene sceneID="AEw-b0-oYE">
@@ -582,12 +582,23 @@
                                 </group>
                             </items>
                         </group>
-                        <group width="1" alignment="left" id="RYh-Uf-0EX">
+                        <group width="1" alignment="left" layout="vertical" id="RYh-Uf-0EX">
                             <items>
-                                <label alignment="left" text="00:00:00" id="3I2-RZ-Y9B">
-                                    <fontDescription key="font" style="UICTFontTextStyleHeadline"/>
+                                <label alignment="left" text="Elapsed time" id="CDp-c8-d3o">
+                                    <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                    <fontDescription key="font" style="UICTFontTextStyleFootnote"/>
                                 </label>
+                                <label alignment="left" text="00:00:00" id="3I2-RZ-Y9B">
+                                    <fontDescription key="font" style="UICTFontTextStyleTitle0"/>
+                                </label>
+                                <button width="1" alignment="left" title="Start" id="bAO-He-YGh">
+                                    <color key="backgroundColor" red="0.13855201710000001" green="0.63817081149999999" blue="0.1047274626" alpha="1" colorSpace="calibratedRGB"/>
+                                    <connections>
+                                        <action selector="toggleTimer" destination="3OC-Ta-4si" id="Ijb-Dk-l66"/>
+                                    </connections>
+                                </button>
                             </items>
+                            <edgeInsets key="margins" left="0.0" right="0.0" top="5" bottom="0.0"/>
                         </group>
                     </items>
                     <connections>
@@ -595,10 +606,11 @@
                         <outlet property="eventualGlucoseLabel" destination="DBQ-JF-oss" id="1ss-eg-XFt"/>
                         <outlet property="glucoseLabel" destination="mZN-zM-ZnP" id="FzC-Pa-a4Z"/>
                         <outlet property="loopHUDImage" destination="tia-vL-EzN" id="VBo-r9-eZa"/>
+                        <outlet property="startButton" destination="bAO-He-YGh" id="c8B-rg-OHg"/>
                     </connections>
                 </controller>
             </objects>
-            <point key="canvasLocation" x="357" y="1122"/>
+            <point key="canvasLocation" x="641" y="730"/>
         </scene>
         <!--OverrideSelectionController-->
         <scene sceneID="xuA-WA-jUi">
