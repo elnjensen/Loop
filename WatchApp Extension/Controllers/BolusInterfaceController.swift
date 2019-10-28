@@ -118,6 +118,16 @@ final class BolusInterfaceController: WKInterfaceController, IdentifiableClass {
         return insulinFormatter
     }()
 
+    private lazy var insulinFormatter: NumberFormatter = {
+        let insulinFormatter = NumberFormatter()
+        insulinFormatter.numberStyle = .decimal
+        insulinFormatter.minimumIntegerDigits = 1
+        insulinFormatter.minimumFractionDigits = 1
+        insulinFormatter.maximumFractionDigits = 2
+
+        return insulinFormatter
+    }()
+
     private var maxPickerValue = 0
 
     /// 1.25
