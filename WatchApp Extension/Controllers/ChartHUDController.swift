@@ -97,6 +97,7 @@ final class ChartHUDController: HUDInterfaceController, WKCrownDelegate {
 
         timer = Timer.scheduledTimer(withTimeInterval: pixelInterval, repeats: true) { [weak self] _ in
             self?.log.default("Timer fired, triggering update")
+            self?.loopManager.requestGlucoseBackfillIfNecessary()
             self?.scene.setNeedsUpdate()
         }
 
