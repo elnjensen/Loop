@@ -72,6 +72,7 @@ final class SettingsTableViewController: UITableViewController {
         case insulinModel
         case carbRatio
         case insulinSensitivity
+        case savedSettings
     }
 
     fileprivate enum ServiceRow: Int, CaseCountable {
@@ -281,6 +282,9 @@ final class SettingsTableViewController: UITableViewController {
                 } else {
                     configCell.detailTextLabel?.text = SettingsTableViewCell.TapToSetString
                 }
+            case .savedSettings:
+                configCell.textLabel?.text = NSLocalizedString("Save or load settings", comment: "The title text for the menu entry for saving settings ")
+
             }
 
             configCell.accessoryType = .disclosureIndicator
@@ -538,6 +542,14 @@ final class SettingsTableViewController: UITableViewController {
                 vc.syncSource = pumpManager
 
                 show(vc, sender: sender)
+            case .savedSettings:
+                let label = "My label"
+                let vc = SavedSettingsTableViewController(testLabel: label)
+                vc.title = sender?.textLabel?.text
+                vc.delegate = self
+
+                show(vc, sender: sender)
+
             }
         case .loop:
             switch LoopRow(rawValue: indexPath.row)! {

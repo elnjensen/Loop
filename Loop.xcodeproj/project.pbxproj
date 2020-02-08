@@ -22,6 +22,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		01B0949923EE642B006D9EEA /* SavedSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B0949823EE642B006D9EEA /* SavedSettingsViewController.swift */; };
 		43027F0F1DFE0EC900C51989 /* HKUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F526D5E1DF2459000A04910 /* HKUnit.swift */; };
 		4302F4E11D4E9C8900F0FCAF /* TextFieldTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4302F4E01D4E9C8900F0FCAF /* TextFieldTableViewController.swift */; };
 		4302F4E31D4EA54200F0FCAF /* InsulinDeliveryTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4302F4E21D4EA54200F0FCAF /* InsulinDeliveryTableViewController.swift */; };
@@ -568,6 +569,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		01B0949823EE642B006D9EEA /* SavedSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSettingsViewController.swift; sourceTree = "<group>"; };
 		4302F4E01D4E9C8900F0FCAF /* TextFieldTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextFieldTableViewController.swift; sourceTree = "<group>"; };
 		4302F4E21D4EA54200F0FCAF /* InsulinDeliveryTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InsulinDeliveryTableViewController.swift; sourceTree = "<group>"; };
 		430B29892041F54A00BA9F93 /* NSUserDefaults.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSUserDefaults.swift; sourceTree = "<group>"; };
@@ -1608,6 +1610,7 @@
 				43E3449E1B9D68E900C85C07 /* StatusTableViewController.swift */,
 				4302F4E01D4E9C8900F0FCAF /* TextFieldTableViewController.swift */,
 				89CA2B31226C18B8004D9350 /* TestingScenariosTableViewController.swift */,
+				01B0949823EE642B006D9EEA /* SavedSettingsViewController.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
@@ -2713,6 +2716,7 @@
 				892A5D59222F0A27008961AB /* Debug.swift in Sources */,
 				431A8C401EC6E8AB00823B9C /* CircleMaskView.swift in Sources */,
 				439897371CD2F80600223065 /* AnalyticsManager.swift in Sources */,
+				01B0949923EE642B006D9EEA /* SavedSettingsViewController.swift in Sources */,
 				895FE0952201234000FCF18A /* OverrideSelectionViewController.swift in Sources */,
 				439706E622D2E84900C81566 /* PredictionSettingTableViewCell.swift in Sources */,
 				430D85891F44037000AF2D4F /* HUDViewTableViewCell.swift in Sources */,
