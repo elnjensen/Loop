@@ -10,16 +10,27 @@ import Foundation
 import HealthKit
 import LoopKit
 import LoopKitUI
+import LoopCore
 import UIKit
 
 final class SavedSettingsTableViewController: TextFieldTableViewController {
     
-    init(testLabel: String) {
+    private lazy var numFormatter: NumberFormatter = {
+        let numberFormatter = NumberFormatter()
+
+        numberFormatter.maximumSignificantDigits = 3
+        numberFormatter.minimumFractionDigits = 1
+
+        return numberFormatter
+    }()
+
+    init(manager: DeviceDataManager) {
         
         super.init(style: .grouped)
         
+        let maxBolus = numFormatter.string(from: manager.loopManager.settings.maximumBasalRatePerHour ?? 0)
         placeholder = NSLocalizedString("Save current settings", comment: "The placeholder text instructing users to save current settings")
-        contextHelp = NSLocalizedString("Only those settings related to dosing will be saved.  Pump and CGM configuration will not.", comment: "Explanation of which settings are saved.")
+        contextHelp = String(format: NSLocalizedString("Only those settings related to dosing will be saved.  Pump and CGM configuration will not. Current max bolus is %@", comment: "Explanation of which settings are saved."),  maxBolus!)
 
      }
     

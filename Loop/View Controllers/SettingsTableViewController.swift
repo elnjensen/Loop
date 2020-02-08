@@ -543,8 +543,7 @@ final class SettingsTableViewController: UITableViewController {
 
                 show(vc, sender: sender)
             case .savedSettings:
-                let label = "My label"
-                let vc = SavedSettingsTableViewController(testLabel: label)
+                let vc = SavedSettingsTableViewController(manager: dataManager)
                 vc.title = sender?.textLabel?.text
                 vc.delegate = self
 
