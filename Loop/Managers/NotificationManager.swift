@@ -178,6 +178,37 @@ struct NotificationManager {
         UNUserNotificationCenter.current().add(request)
     }
 
+    static func sendReservoirReconciliationNotification(units: Double, lastReconciliation: Date, lastReservoir: Date) {
+        let notification = UNMutableNotificationContent()
+
+        let unitsString = NumberFormatter.localizedString(from: NSNumber(value: units), number: .decimal)
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .short
+        dateFormatter.timeStyle = .medium
+
+        let reconciliationDate = dateFormatter.string(from: lastReconciliation)
+        let reservoirDate = dateFormatter.string(from: lastReservoir)
+
+        notification.title = NSLocalizedString("New reservoir value", comment: "The notification title for reading the reservoir - debugging only")
+        notification.body = String(format: NSLocalizedString("%1$@ U left, last reconciliation:\n\t %2$@ \nLast reservoir reading:\n\t %3$@ ", comment: "Reservoir reading format string (debugging). (1: Number of units remaining 2: Date of last pump events reconciliation 3: Date of last reservoir reading)"), unitsString, reconciliationDate, reservoirDate)
+        if (lastReservoir > lastReconciliation) {
+//            notification.sound = .default
+            notification.sound = .none
+        } else {
+            notification.sound = .none
+        }
+        notification.categoryIdentifier = LoopNotificationCategory.pumpReservoirReading.rawValue
+
+        let request = UNNotificationRequest(
+            identifier: LoopNotificationCategory.pumpReservoirReading.rawValue,
+            content: notification,
+            trigger: nil
+        )
+
+        UNUserNotificationCenter.current().add(request)
+    }
+
     static func clearPumpBatteryLowNotification() {
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [LoopNotificationCategory.pumpBatteryLow.rawValue])
     }
