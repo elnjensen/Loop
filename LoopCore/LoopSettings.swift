@@ -36,6 +36,8 @@ public extension DosingStrategy {
 public struct LoopSettings: Equatable {
     public var dosingEnabled = false
 
+    public var newIOBEnabled = false
+
     public let dynamicCarbAbsorptionEnabled = true
 
     public static let defaultCarbAbsorptionTimes: CarbStore.DefaultAbsorptionTimes = (fast: .hours(0.5), medium: .hours(2.5), slow: .hours(4))
@@ -120,12 +122,14 @@ public struct LoopSettings: Equatable {
 
     public init(
         dosingEnabled: Bool = false,
+        newIOBEnabled: Bool = false,
         glucoseTargetRangeSchedule: GlucoseRangeSchedule? = nil,
         maximumBasalRatePerHour: Double? = nil,
         maximumBolus: Double? = nil,
         suspendThreshold: GlucoseThreshold? = nil
     ) {
         self.dosingEnabled = dosingEnabled
+        self.newIOBEnabled = newIOBEnabled
         self.glucoseTargetRangeSchedule = glucoseTargetRangeSchedule
         self.maximumBasalRatePerHour = maximumBasalRatePerHour
         self.maximumBolus = maximumBolus
@@ -226,6 +230,10 @@ extension LoopSettings: RawRepresentable {
             self.dosingEnabled = dosingEnabled
         }
 
+        if let newIOBEnabled = rawValue["newIOBEnabled"] as? Bool {
+            self.newIOBEnabled = newIOBEnabled
+        }
+
         if let glucoseRangeScheduleRawValue = rawValue["glucoseTargetRangeSchedule"] as? GlucoseRangeSchedule.RawValue {
             self.glucoseTargetRangeSchedule = GlucoseRangeSchedule(rawValue: glucoseRangeScheduleRawValue)
 
@@ -275,6 +283,7 @@ extension LoopSettings: RawRepresentable {
         var raw: RawValue = [
             "version": LoopSettings.version,
             "dosingEnabled": dosingEnabled,
+            "newIOBEnabled": newIOBEnabled,
             "overridePresets": overridePresets.map { $0.rawValue }
         ]
 

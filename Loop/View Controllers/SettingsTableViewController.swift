@@ -53,6 +53,7 @@ final class SettingsTableViewController: UITableViewController {
 
     fileprivate enum LoopRow: Int, CaseCountable {
         case dosing = 0
+        case iobalgo = 1
         case diagnostic
     }
 
@@ -168,6 +169,16 @@ final class SettingsTableViewController: UITableViewController {
                 switchCell.switch?.addTarget(self, action: #selector(dosingEnabledChanged(_:)), for: .valueChanged)
 
                 return switchCell
+            case .iobalgo:
+                let iobCell = tableView.dequeueReusableCell(withIdentifier: SwitchTableViewCell.className, for: indexPath) as! SwitchTableViewCell
+
+                iobCell.selectionStyle = .none
+                iobCell.switch?.isOn = true
+                iobCell.textLabel?.text = NSLocalizedString("New IOB calc", comment: "The title text for the new IOB calc enabled switch cell")
+
+                iobCell.switch?.addTarget(self, action: #selector(newIOBEnabledChanged(_:)), for: .valueChanged)
+
+                return iobCell
             case .diagnostic:
                 let cell = tableView.dequeueReusableCell(withIdentifier: SettingsTableViewCell.className, for: indexPath)
 
@@ -567,6 +578,8 @@ final class SettingsTableViewController: UITableViewController {
                 show(vc, sender: sender)
             case .dosing:
                 break
+            case .iobalgo:
+                break
             }
         case .services:
             switch ServiceRow(rawValue: indexPath.row)! {
@@ -616,6 +629,10 @@ final class SettingsTableViewController: UITableViewController {
 
     @objc private func dosingEnabledChanged(_ sender: UISwitch) {
         dataManager.loopManager.settings.dosingEnabled = sender.isOn
+    }
+
+    @objc private func newIOBEnabledChanged(_ sender: UISwitch) {
+        dataManager.loopManager.settings.newIOBEnabled = sender.isOn
     }
 }
 
