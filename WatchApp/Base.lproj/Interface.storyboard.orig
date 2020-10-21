@@ -428,7 +428,6 @@
                                                         <fontDescription key="font" style="UICTFontTextStyleTitle3"/>
                                                     </label>
                                                 </items>
-                                                <edgeInsets key="margins" left="8" right="0.0" top="0.0" bottom="0.0"/>
                                             </group>
                                             <separator alignment="center" id="VV1-lG-fC0">
                                                 <color key="color" name="separator"/>
