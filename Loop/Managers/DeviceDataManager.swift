@@ -544,7 +544,7 @@ extension DeviceDataManager: PumpManagerDelegate {
             case .success(let (newValue, lastValue, areStoredValuesContinuous)):
                 completion(.success((newValue: newValue, lastValue: lastValue, areStoredValuesContinuous: areStoredValuesContinuous)))
 
-                NotificationManager.sendReservoirReconciliationNotification(units: units, lastReconciliation: pumpManager.lastReconciliation ?? Date(), lastReservoir: date)
+//                NotificationManager.sendReservoirReconciliationNotification(units: units, lastReconciliation: pumpManager.lastReconciliation ?? Date(), lastReservoir: date)
                 // Send notifications for low reservoir if necessary
                 if let previousVolume = lastValue?.unitVolume {
                     guard newValue.unitVolume > 0 else {
