@@ -466,7 +466,8 @@ final class StatusTableViewController: ChartsTableViewController {
             if let maxValue = charts.iob.iobPoints.allElementsAdjacent(to: Date()).max(by: {
                 return $0.y.scalar < $1.y.scalar
             }) {
-                self.currentIOBDescription = String(describing: maxValue.y)
+                let iobTypeLabel = self.deviceManager.loopManager.settings.newIOBEnabled ? "New: " : "Old: "
+                self.currentIOBDescription = iobTypeLabel + String(describing: maxValue.y)
             } else {
                 self.currentIOBDescription = nil
             }

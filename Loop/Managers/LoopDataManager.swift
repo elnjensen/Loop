@@ -142,6 +142,7 @@ final class LoopDataManager {
             guard settings != oldValue else {
                 return
             }
+            doseStore.useNewIOBAlgo = settings.newIOBEnabled
             if settings.scheduleOverride != oldValue.scheduleOverride {
                 overrideHistory.recordOverride(settings.scheduleOverride)
 

@@ -173,7 +173,7 @@ final class SettingsTableViewController: UITableViewController {
                 let iobCell = tableView.dequeueReusableCell(withIdentifier: SwitchTableViewCell.className, for: indexPath) as! SwitchTableViewCell
 
                 iobCell.selectionStyle = .none
-                iobCell.switch?.isOn = true
+                iobCell.switch?.isOn = dataManager.loopManager.settings.newIOBEnabled
                 iobCell.textLabel?.text = NSLocalizedString("New IOB calc", comment: "The title text for the new IOB calc enabled switch cell")
 
                 iobCell.switch?.addTarget(self, action: #selector(newIOBEnabledChanged(_:)), for: .valueChanged)
