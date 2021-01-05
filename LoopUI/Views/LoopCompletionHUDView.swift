@@ -13,7 +13,7 @@ import LoopCore
 public final class LoopCompletionHUDView: BaseHUDView {
 
     @IBOutlet private weak var loopStateView: LoopStateView!
-    
+    @IBOutlet weak var loopRecency: UILabel!
     override public var orderPriority: HUDViewOrderPriority {
         return 2
     }
@@ -122,6 +122,20 @@ public final class LoopCompletionHUDView: BaseHUDView {
             let ago = abs(min(0, date.timeIntervalSinceNow))
 
             freshness = LoopCompletionFreshness(age: ago)
+
+            let integerFormatter = NumberFormatter()
+            let minutesAgo = -date.timeIntervalSinceNow.minutes
+            switch freshness {
+            case .fresh:
+                loopRecency.textColor = stateColors?.normal
+                loopRecency.text = ""
+            case .aging:
+                loopRecency.textColor = stateColors?.warning
+                loopRecency.text = integerFormatter.string(from: minutesAgo)
+            case .stale:
+                loopRecency.textColor = stateColors?.error
+                loopRecency.text = integerFormatter.string(from: minutesAgo)
+            }
 
             if let timeString = formatter.string(from: ago) {
                 switch traitCollection.preferredContentSizeCategory {

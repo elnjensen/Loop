@@ -197,11 +197,11 @@ class StatusViewController: UIViewController, NCWidgetProviding {
             group.leave()
         }
     
-        charts.startDate = Calendar.current.nextDate(after: Date(timeIntervalSinceNow: .minutes(-5)), matching: DateComponents(minute: 0), matchingPolicy: .strict, direction: .backward) ?? Date()
+        charts.startDate = Calendar.current.nextDate(after: Date(timeIntervalSinceNow: .minutes(-65)), matching: DateComponents(minute: 0), matchingPolicy: .strict, direction: .backward) ?? Date()
 
         // Showing the whole history plus full prediction in the glucose plot
         // is a little crowded, so limit it to three hours in the future:
-        charts.maxEndDate = charts.startDate.addingTimeInterval(TimeInterval(hours: 3))
+        charts.maxEndDate = charts.startDate.addingTimeInterval(TimeInterval(hours: 4))
 
         group.enter()
         glucoseStore.getGlucoseSamples(start: charts.startDate) { (result) in

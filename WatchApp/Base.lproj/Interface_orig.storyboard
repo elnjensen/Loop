@@ -22,12 +22,9 @@
                     <items>
                         <group width="1" alignment="left" id="1wc-65-vel">
                             <items>
-                                <group width="0.25" alignment="left" layout="overlap" id="2Qn-78-Zex">
+                                <group width="0.25" alignment="left" layout="vertical" id="2Qn-78-Zex">
                                     <items>
                                         <imageView alignment="center" image="loop_unknown" contentMode="center" id="Q7C-xN-eH8"/>
-                                        <label alignment="center" verticalAlignment="center" text="Label" baselineAdjustment="alignCenters" id="Jfb-v4-HRI" userLabel="Last Loop label">
-                                            <fontDescription key="font" style="UICTFontTextStyleFootnote"/>
-                                        </label>
                                     </items>
                                 </group>
                                 <group width="0.75" alignment="left" layout="vertical" id="QDM-Gw-2Ex">
@@ -157,7 +154,6 @@
                         <outlet property="carbsButtonBackground" destination="C7f-Mo-eUU" id="ere-wU-Kax"/>
                         <outlet property="carbsButtonImage" destination="4aO-ao-Sp9" id="Nlk-SP-VmT"/>
                         <outlet property="glucoseLabel" destination="MHD-Is-5mK" id="MDr-iV-fr1"/>
-                        <outlet property="lastLoopLabel" destination="Jfb-v4-HRI" id="qDa-ku-S13"/>
                         <outlet property="loopHUDImage" destination="Q7C-xN-eH8" id="CIe-B3-umI"/>
                         <outlet property="overrideButton" destination="dYe-c2-Sfm" id="m7H-fY-Cxg"/>
                         <outlet property="overrideButtonBackground" destination="HCn-yQ-9kV" id="SXL-jK-n6U"/>
@@ -177,14 +173,11 @@
             <objects>
                 <controller identifier="ChartHUDController" title="Loop" spacing="7" alwaysBounce="YES" id="v5b-sO-bb8" customClass="ChartHUDController" customModule="WatchApp_Extension">
                     <items>
-                        <group width="1" height="26" alignment="left" id="z0r-4k-Z7h">
+                        <group width="1" alignment="left" id="z0r-4k-Z7h">
                             <items>
-                                <group width="0.25" alignment="left" layout="overlap" id="Z7g-qg-0wK">
+                                <group width="0.25" alignment="left" layout="vertical" id="Z7g-qg-0wK">
                                     <items>
-                                        <imageView alignment="center" verticalAlignment="center" image="loop_unknown" contentMode="center" id="ifw-dh-btK"/>
-                                        <label alignment="center" verticalAlignment="center" text="Label" baselineAdjustment="alignCenters" id="oyE-HT-Zp3">
-                                            <fontDescription key="font" style="UICTFontTextStyleFootnote"/>
-                                        </label>
+                                        <imageView alignment="center" image="loop_unknown" contentMode="center" id="ifw-dh-btK"/>
                                     </items>
                                 </group>
                                 <group width="0.75" alignment="left" layout="vertical" id="nPX-XN-diX">
@@ -230,7 +223,6 @@
                                                         <fontDescription key="font" style="UICTFontTextStyleTitle3"/>
                                                     </label>
                                                 </items>
-                                                <edgeInsets key="margins" left="8" right="0.0" top="0.0" bottom="0.0"/>
                                             </group>
                                             <separator alignment="center" id="VV1-lG-fC0">
                                                 <color key="color" name="separator"/>
@@ -272,13 +264,12 @@
                     <connections>
                         <outlet property="glucoseLabel" destination="Dt1-kz-jMZ" id="MQj-0o-PaV"/>
                         <outlet property="glucoseScene" destination="9BI-AC-l6c" id="O4a-P8-cHI"/>
-                        <outlet property="lastLoopLabel" destination="oyE-HT-Zp3" id="T9M-Kj-zuH"/>
                         <outlet property="loopHUDImage" destination="ifw-dh-btK" id="Bc0-er-dfe"/>
                         <outlet property="table" destination="Atz-83-hgn" id="yzw-fm-hhk"/>
                     </connections>
                 </controller>
             </objects>
-            <point key="canvasLocation" x="340" y="750.5"/>
+            <point key="canvasLocation" x="340" y="751.48717948717956"/>
         </scene>
         <!--CarbEntryListController-->
         <scene sceneID="d2g-lD-eT2">
@@ -414,34 +405,34 @@
         <image name="1-hour-graph" width="70" height="70"/>
         <image name="2-hour-graph" width="70" height="70"/>
         <image name="3-hour-graph" width="70" height="70"/>
-        <image name="bolus" width="44" height="44"/>
-        <image name="carbs" width="44" height="44"/>
+        <image name="bolus" width="32" height="32"/>
+        <image name="carbs" width="32" height="32"/>
         <image name="loop_unknown" width="26" height="26"/>
-        <image name="pre-meal" width="44" height="44"/>
-        <image name="workout" width="44" height="44"/>
+        <image name="pre-meal" width="32" height="32"/>
+        <image name="workout" width="32" height="32"/>
         <namedColor name="carbs">
-            <color red="0.3880000114440918" green="0.85500001907348633" blue="0.2199999988079071" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.66699999570846558" blue="0.22400000691413879" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="carbs-dark">
-            <color red="0.070000000298023224" green="0.11999999731779099" blue="0.039999999105930328" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0080000003799796104" green="0.14100000262260437" blue="0.050999999046325684" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="insulin">
-            <color red="1" green="0.58399999141693115" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.33300000429153442" green="0.41200000047683716" blue="0.94900000095367432" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="insulin-dark">
-            <color red="1" green="0.58399999141693115" blue="0.0" alpha="0.15000000596046448" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.33300000429153442" green="0.41200000047683716" blue="0.94900000095367432" alpha="0.15000000596046448" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="insulin-notification-background">
-            <color red="1" green="0.58399999141693115" blue="0.0" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.33300000429153442" green="0.41200000047683716" blue="0.94900000095367432" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="separator">
             <color red="0.72200000286102295" green="0.72200000286102295" blue="0.72200000286102295" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="workout">
-            <color red="0.31000000238418579" green="0.67799997329711914" blue="0.97299998998641968" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.46700000762939453" green="0.36500000953674316" blue="0.79600000381469727" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="workout-dark">
-            <color red="0.019999999552965164" green="0.10000000149011612" blue="0.14000000059604645" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.125" green="0.10999999940395355" blue="0.17299999296665192" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

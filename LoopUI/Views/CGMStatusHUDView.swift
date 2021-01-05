@@ -124,6 +124,12 @@ public final class CGMStatusHUDView: DeviceStatusHUDView, NibLoadable {
         glucoseValueHUD.glucoseLabel.text = viewModel.glucoseValueString
         glucoseValueHUD.unitLabel.text = viewModel.unitsString
         glucoseValueHUD.tintColor = viewModel.glucoseValueTintColor
+        if viewModel.glucoseMinutesAgo > 6 {
+            glucoseValueHUD.glucoseTimeLabel.text = viewModel.glucoseTime
+        } else {
+            glucoseValueHUD.glucoseTimeLabel.text = ""
+        }
+        
         presentStatusHighlight(viewModel.statusHighlight)
         
         accessibilityValue = viewModel.accessibilityString

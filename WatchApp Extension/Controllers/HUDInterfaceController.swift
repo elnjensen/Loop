@@ -13,6 +13,7 @@ class HUDInterfaceController: WKInterfaceController {
     private var activeContextObserver: NSObjectProtocol?
 
     @IBOutlet weak var loopHUDImage: WKInterfaceImage!
+    @IBOutlet weak var lastLoopLabel: WKInterfaceLabel!
     @IBOutlet weak var glucoseLabel: WKInterfaceLabel!
 
     var loopManager = ExtensionDelegate.shared().loopManager
@@ -73,10 +74,22 @@ class HUDInterfaceController: WKInterfaceController {
             if let glucose = activeContext.glucose, let glucoseDate = activeContext.glucoseDate, let unit = activeContext.preferredGlucoseUnit, glucoseDate.timeIntervalSinceNow > -LoopCoreConstants.inputDataRecencyInterval {
                 let formatter = NumberFormatter.glucoseFormatter(for: unit)
                 
+                var eventualGlucoseValue = ""
+                if let eventualGlucose = activeContext.eventualGlucose {
+                    eventualGlucoseValue = formatter.string(from: eventualGlucose.doubleValue(for: unit)) ?? ""
+                }
                 if let glucoseValue = formatter.string(from: glucose.doubleValue(for: unit)) {
                     let trend = activeContext.glucoseTrend?.symbol ?? ""
-                    glucoseLabel.setText(glucoseValue + trend)
+                    glucoseLabel.setText(glucoseValue + " " + trend + "   " + eventualGlucoseValue)
                 }
+            }
+            let loopRecency = -date!.timeIntervalSinceNow.minutes
+            let integerFormatter = NumberFormatter()
+            integerFormatter.maximumFractionDigits = 0
+            if loopRecency > 5 {
+                lastLoopLabel.setText(integerFormatter.string(from: loopRecency))
+            } else {
+                lastLoopLabel.setText("")
             }
         }
 
