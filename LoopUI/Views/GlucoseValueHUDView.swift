@@ -31,6 +31,13 @@ public final class GlucoseValueHUDView: BaseHUDView {
         }
     }
 
+    @IBOutlet public weak var glucoseTimeLabel: UILabel! {
+        didSet {
+            glucoseTimeLabel.text = ""
+            glucoseTimeLabel.textColor = .secondaryLabel
+        }
+    }
+
     public override func tintColorDidChange() {
         super.tintColorDidChange()
 

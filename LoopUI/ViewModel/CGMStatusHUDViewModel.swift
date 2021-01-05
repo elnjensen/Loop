@@ -17,6 +17,10 @@ public class CGMStatusHUDViewModel {
     
     var unitsString: String = "–"
     
+    var glucoseTime: String = ""
+    
+    var glucoseMinutesAgo: Double = 0.0
+    
     var glucoseValueString: String = CGMStatusHUDViewModel.staleGlucoseRepresentation
     
     var accessibilityString: String = ""
@@ -116,6 +120,8 @@ public class CGMStatusHUDViewModel {
         trend = nil
         
         let time = timeFormatter.string(from: glucoseStartDate)
+        glucoseMinutesAgo = -glucoseStartDate.timeIntervalSinceNow.minutes
+        glucoseTime = time
         
         isStaleAt = glucoseStartDate.addingTimeInterval(staleGlucoseAge)
         let glucoseValueCurrent = Date() < isStaleAt!
