@@ -232,7 +232,7 @@ class GlucoseChartScene: SKScene {
         minBGLabel.move(to: CGPoint(x: size.width - textInsets.right, y: textInsets.bottom))
         maxBGLabel.text = numberFormatter.string(from: glucoseRange.upperBound.doubleValue(for: unit))
         maxBGLabel.move(to: CGPoint(x: size.width - textInsets.right, y: size.height - textInsets.top))
-        hoursLabel.text = dateFormatter.string(from: visibleDuration)
+        hoursLabel.text = dateFormatter.string(from: visibleDuration/2)
         hoursLabel.move(to: CGPoint(x: textInsets.left, y: size.height - textInsets.top))
 
         // Keep track of the nodes we started this pass with so we can expire obsolete nodes at the end
@@ -297,7 +297,7 @@ class GlucoseChartScene: SKScene {
 
         data.historicalGlucose?.filter { scaler.dates.contains($0.startDate) }.forEach {
             let center = scaler.point($0.startDate, $0.quantity.doubleValue(for: unit))
-            let size = CGSize(width: 2, height: 2)
+            let size = CGSize(width: 3, height: 3)
             let origin = CGPoint(x: center.x - size.width / 2, y: center.y - size.height / 2)
             let (sprite, created) = getSprite(forHash: $0.chartHashValue)
             sprite.color = .glucose
