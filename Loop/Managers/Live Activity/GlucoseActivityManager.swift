@@ -27,7 +27,6 @@ class GlucoseActivityManager {
     private let doseStore: DoseStoreProtocol
     
     private var lastGlucoseSample: GlucoseSampleValue?
-    private var prevGlucoseSample: GlucoseSampleValue?
     
     private var startDate: Date = Date.now
     private var settings: LiveActivitySettings = UserDefaults.standard.liveActivity ?? LiveActivitySettings()
@@ -103,12 +102,15 @@ class GlucoseActivityManager {
             self.lastGlucoseSample = glucose
             
             var delta: String = "+\(glucoseFormatter.string(from: Double(0)) ?? "")"
-            if let prevSample = self.prevGlucoseSample {
-                let deltaValue = current - (prevSample.quantity.doubleValue(for: unit))
-                delta = "\(deltaValue < 0 ? "-" : "+")\(glucoseFormatter.string(from: abs(deltaValue)) ?? "??")"
-            }
             
             let glucoseSamples = self.getGlucoseSample(unit: unit)
+
+            let glucoseCount = glucoseSamples.count
+            if glucoseCount > 1 {
+                let deltaValue = glucoseSamples[glucoseCount - 1].y - glucoseSamples[glucoseCount - 2].y
+                delta = "\(deltaValue < 0 ? "-" :    "+")\(glucoseFormatter.string(from: abs(deltaValue)) ?? "??")"
+            }
+            
             let bottomRow = self.getBottomRow(
                 currentGlucose: current,
                 delta: delta,
@@ -142,10 +144,6 @@ class GlucoseActivityManager {
                 staleDate: Date.now.addingTimeInterval(.hours(1))
             ))
             
-            if 
-                prevGlucoseSample == nil || prevGlucoseSample!.startDate.timeIntervalSince(glucose.startDate) < .minutes(-4.5) {
-                self.prevGlucoseSample = glucose
-            }
         }
     }
     
