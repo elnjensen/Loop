@@ -54,7 +54,6 @@ class GlucoseActivityManager {
     
     init?(glucoseStore: GlucoseStoreProtocol, doseStore: DoseStoreProtocol) {
         guard self.activityInfo.areActivitiesEnabled else {
-            print("ERROR: Activities are not enabled... :(")
             return nil
         }
         
@@ -124,6 +123,7 @@ class GlucoseActivityManager {
 
             let state = GlucoseActivityAttributes.ContentState(
                 date: glucose.startDate,
+                ended: false,
                 currentGlucose: current,
                 trendType: statusContext?.glucoseDisplay?.trendType,
                 delta: delta,
@@ -142,7 +142,8 @@ class GlucoseActivityManager {
                 staleDate: Date.now.addingTimeInterval(.hours(1))
             ))
             
-            if prevGlucoseSample == nil || prevGlucoseSample!.startDate.timeIntervalSince(glucose.startDate) < .minutes(-4.5) {
+            if 
+                prevGlucoseSample == nil || prevGlucoseSample!.startDate.timeIntervalSince(glucose.startDate) < .minutes(-4.5) {
                 self.prevGlucoseSample = glucose
             }
         }
@@ -325,6 +326,7 @@ class GlucoseActivityManager {
         do {
             let dynamicState = GlucoseActivityAttributes.ContentState(
                 date: Date.now,
+                ended: true,
                 currentGlucose: 0,
                 trendType: nil,
                 delta: "",
