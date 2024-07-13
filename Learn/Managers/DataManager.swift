@@ -21,11 +21,11 @@ final class DataManager {
     let settings: LoopSettings
 
     init(
-        basalRateSchedule: BasalRateSchedule? = UserDefaults.appGroup?.basalRateSchedule,
-        carbRatioSchedule: CarbRatioSchedule? = UserDefaults.appGroup?.carbRatioSchedule,
-        insulinModelSettings: InsulinModelSettings? = UserDefaults.appGroup?.insulinModelSettings,
-        insulinSensitivitySchedule: InsulinSensitivitySchedule? = UserDefaults.appGroup?.insulinSensitivitySchedule,
-        settings: LoopSettings = UserDefaults.appGroup?.loopSettings ?? LoopSettings()
+        basalRateSchedule: BasalRateSchedule? = UserDefaults.appGroup?.legacyBasalRateSchedule,
+        carbRatioSchedule: CarbRatioSchedule? = UserDefaults.appGroup?.legacyCarbRatioSchedule,
+        defaultRapidActingModel: ExponentialInsulinModelPreset? = UserDefaults.appGroup?.legacyDefaultRapidActingModel,
+        insulinSensitivitySchedule: InsulinSensitivitySchedule? = UserDefaults.appGroup?.legacyInsulinSensitivitySchedule,
+        settings: LoopSettings = UserDefaults.appGroup?.legacyLoopSettings ?? LoopSettings()
     ) {
         self.settings = settings
 
@@ -35,24 +35,30 @@ final class DataManager {
         carbStore = CarbStore(
             healthStore: healthStore,
             cacheStore: cacheStore,
-            observationEnabled: false,
+            cacheLength: .hours(24),
+            defaultAbsorptionTimes: (fast: .minutes(30), medium: .hours(3), slow: .hours(5)),
+            observationInterval: 0,
             carbRatioSchedule: carbRatioSchedule,
-            insulinSensitivitySchedule: insulinSensitivitySchedule
+            insulinSensitivitySchedule: insulinSensitivitySchedule,
+            provenanceIdentifier: HKSource.default().bundleIdentifier
         )
 
         doseStore = DoseStore(
             healthStore: healthStore,
             cacheStore: cacheStore,
             observationEnabled: false,
-            insulinModel: insulinModelSettings?.model,
+            insulinModelProvider: PresetInsulinModelProvider(defaultRapidActingModel: defaultRapidActingModel),
+            longestEffectDuration: ExponentialInsulinModelPreset.rapidActingAdult.effectDuration,
             basalProfile: basalRateSchedule,
-            insulinSensitivitySchedule: insulinSensitivitySchedule
+            insulinSensitivitySchedule: insulinSensitivitySchedule,
+            provenanceIdentifier: HKSource.default().bundleIdentifier
         )
 
         glucoseStore = GlucoseStore(
             healthStore: healthStore,
             cacheStore: cacheStore,
-            observationEnabled: false
+            observationEnabled: false,
+            provenanceIdentifier: HKSource.default().bundleIdentifier
         )
     }
 }
@@ -69,15 +75,6 @@ extension DataManager {
     /// This is measured in grams/Unit
     var carbRatioSchedule: CarbRatioSchedule? {
         return carbStore.carbRatioSchedule
-    }
-
-    /// The length of time insulin has an effect on blood glucose
-    var insulinModelSettings: InsulinModelSettings? {
-        guard let model = doseStore.insulinModel else {
-            return nil
-        }
-
-        return InsulinModelSettings(model: model)
     }
 
     /// The daily schedule of insulin sensitivity (also known as ISF)

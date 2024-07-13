@@ -8,6 +8,7 @@
 import Foundation
 import LoopKit
 import LoopUI
+import LoopKitUI
 import SwiftCharts
 
 
@@ -25,7 +26,8 @@ class StatusChartsManager: ChartsManager {
     let cob: COBChart
 
     init(colors: ChartColorPalette, settings: ChartSettings, traitCollection: UITraitCollection) {
-        let glucose = PredictedGlucoseChart()
+        let glucose = PredictedGlucoseChart(predictedGlucoseBounds: FeatureFlags.predictedGlucoseChartClampEnabled ? .default : nil,
+                                            yAxisStepSizeMGDLOverride: FeatureFlags.predictedGlucoseChartClampEnabled ? 40 : nil)
         let iob = IOBChart()
         let dose = DoseChart()
         let cob = COBChart()
@@ -79,6 +81,16 @@ extension StatusChartsManager {
         }
     }
 
+    var preMealOverride: TemporaryScheduleOverride? {
+        get {
+            return glucose.preMealOverride
+        }
+        set {
+            glucose.preMealOverride = newValue
+            invalidateChart(atIndex: ChartIndex.glucose.rawValue)
+        }
+    }
+
     var scheduleOverride: TemporaryScheduleOverride? {
         get {
             return glucose.scheduleOverride
@@ -104,7 +116,7 @@ extension StatusChartsManager {
 
 extension StatusChartsManager {
     func setDoseEntries(_ doseEntries: [DoseEntry]) {
-        dose.setDoseEntries(doseEntries)
+        dose.doseEntries = doseEntries
         invalidateChart(atIndex: ChartIndex.dose.rawValue)
     }
 

@@ -13,6 +13,42 @@ import LoopKitUI
 
 public final class GlucoseHUDView: BaseHUDView {
     
+    static let staleGlucoseRepresentation: String = NSLocalizedString("– – –", comment: "No glucose value representation (3 dashes for mg/dL)")
+    
+    private var stalenessTimer: Timer?
+    
+    private var isStaleAt: Date? {
+        didSet {
+            if oldValue != isStaleAt {
+                stalenessTimer?.invalidate()
+                stalenessTimer = nil
+            }
+        }
+    }
+    
+    public var isVisible: Bool = true {
+        didSet {
+            if oldValue != isVisible {
+                if !isVisible {
+                    stalenessTimer?.invalidate()
+                    stalenessTimer = nil
+                } else {
+                    startStalenessTimerIfNeeded()
+                }
+            }
+        }
+    }
+    
+    private func startStalenessTimerIfNeeded() {
+        if let fireDate = isStaleAt, isVisible, stalenessTimer == nil {
+            
+            stalenessTimer = Timer(fire: fireDate, interval: 0, repeats: false) { (_) in
+                self.glucoseLabel.text = GlucoseHUDView.staleGlucoseRepresentation
+            }
+            RunLoop.main.add(stalenessTimer!, forMode: .default)
+        }
+    }
+    
     override public var orderPriority: HUDViewOrderPriority {
         return 2
     }
@@ -26,7 +62,7 @@ public final class GlucoseHUDView: BaseHUDView {
 
     @IBOutlet private weak var glucoseLabel: UILabel! {
         didSet {
-            glucoseLabel.text = "–"
+            glucoseLabel.text = GlucoseHUDView.staleGlucoseRepresentation
             glucoseLabel.textColor = tintColor
         }
     }
@@ -91,27 +127,29 @@ public final class GlucoseHUDView: BaseHUDView {
         }
     }
 
-    public func setGlucoseQuantity(_ glucoseQuantity: Double, at glucoseStartDate: Date, unit: HKUnit, sensor: SensorDisplayable?) {
+    public func setGlucoseQuantity(_ glucoseQuantity: Double, at glucoseStartDate: Date, unit: HKUnit, staleGlucoseAge: TimeInterval, sensor: GlucoseDisplayable?) {
         var accessibilityStrings = [String]()
 
         let time = timeFormatter.string(from: glucoseStartDate)
         caption?.text = time
         
-        let sensorDataCurrent = glucoseStartDate.timeIntervalSinceNow > TimeInterval(minutes: -15)
+        isStaleAt = glucoseStartDate.addingTimeInterval(staleGlucoseAge)
+        let glucoseValueCurrent = Date() < isStaleAt!
 
         let numberFormatter = NumberFormatter.glucoseFormatter(for: unit)
         if let valueString = numberFormatter.string(from: glucoseQuantity) {
-            if sensorDataCurrent {
+            if glucoseValueCurrent {
                 glucoseLabel.text = valueString
+                startStalenessTimerIfNeeded()
             } else {
-                glucoseLabel.text = "-"
+                glucoseLabel.text = GlucoseHUDView.staleGlucoseRepresentation
             }
             accessibilityStrings.append(String(format: LocalizedString("%1$@ at %2$@", comment: "Accessbility format value describing glucose: (1: glucose number)(2: glucose time)"), valueString, time))
         }
 
         var unitStrings = [unit.localizedShortUnitString]
 
-        if let trend = sensor?.trendType, sensorDataCurrent {
+        if let trend = sensor?.trendType, glucoseValueCurrent {
             unitStrings.append(trend.symbol)
             accessibilityStrings.append(trend.localizedDescription)
         }
@@ -129,6 +167,8 @@ public final class GlucoseHUDView: BaseHUDView {
 
         unitLabel.text = unitStrings.joined(separator: " ")
         accessibilityValue = accessibilityStrings.joined(separator: ", ")
+        
+        
     }
 
     private lazy var timeFormatter = DateFormatter(timeStyle: .short)

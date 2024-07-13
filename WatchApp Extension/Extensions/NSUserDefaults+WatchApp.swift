@@ -13,6 +13,7 @@ extension UserDefaults {
     private enum Key: String {
         case StartOnChartPage = "com.loudnate.Naterade.StartOnChartPage"
         case VisibleDuration = "com.loudnate.Naterade.VisibleDuration"
+        case SupportedBolusVolumes = "com.loopkit.Loop.SupportedBolusVolumes"
     }
 
     var startOnChartPage: Bool {
@@ -29,10 +30,23 @@ extension UserDefaults {
             if let value = object(forKey: Key.VisibleDuration.rawValue) as? TimeInterval {
                 return value
             }
-            return TimeInterval (hours: 6)
+            return TimeInterval(hours: 2)
         }
         set {
             set(newValue.rawValue, forKey: Key.VisibleDuration.rawValue)
+        }
+    }
+
+    var supportedBolusVolumes: [Double]? {
+        get {
+            array(forKey: Key.SupportedBolusVolumes.rawValue) as? [Double]
+        }
+        set {
+            guard let newValue = newValue else {
+                removeObject(forKey: Key.SupportedBolusVolumes.rawValue)
+                return
+            }
+            set(newValue, forKey: Key.SupportedBolusVolumes.rawValue)
         }
     }
 }

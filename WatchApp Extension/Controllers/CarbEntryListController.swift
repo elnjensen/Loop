@@ -25,7 +25,7 @@ class CarbEntryListController: WKInterfaceController, IdentifiableClass {
     private lazy var loopManager = ExtensionDelegate.shared().loopManager
 
     private lazy var carbFormatter: QuantityFormatter = {
-        let formatter = QuantityFormatter()
+        let formatter = QuantityFormatter(for: .gram())
         formatter.numberFormatter.numberStyle = .none
         return formatter
     }()
@@ -40,14 +40,15 @@ class CarbEntryListController: WKInterfaceController, IdentifiableClass {
 
     override func awake(withContext context: Any?) {
         table.setNumberOfRows(0, withRowType: TextRowController.className)
+        loopManager.requestCarbBackfill()
         reloadCarbEntries()
         updateActiveCarbs()
     }
 
     override func willActivate() {
         observers = [
-            NotificationCenter.default.addObserver(forName: CarbStore.carbEntriesDidUpdate, object: loopManager.carbStore, queue: nil) { [weak self] (note) in
-                self?.log.default("Received CarbEntriesDidUpdate notification: %{public}@. Updating list", String(describing: note.userInfo ?? [:]))
+            NotificationCenter.default.addObserver(forName: CarbStore.carbEntriesDidChange, object: loopManager.carbStore, queue: nil) { [weak self] (note) in
+                self?.log.default("Received carbEntriesDidChange notification: %{public}@. Updating list", String(describing: note.userInfo ?? [:]))
 
                 DispatchQueue.main.async {
                     self?.reloadCarbEntries()
@@ -56,6 +57,7 @@ class CarbEntryListController: WKInterfaceController, IdentifiableClass {
             NotificationCenter.default.addObserver(forName: LoopDataManager.didUpdateContextNotification, object: loopManager, queue: nil) { [weak self] (note) in
                 DispatchQueue.main.async {
                     self?.updateActiveCarbs()
+                    self?.loopManager.requestCarbBackfill()
                 }
             }
         ]
@@ -73,7 +75,7 @@ extension CarbEntryListController {
             return
         }
 
-        cobLabel.setText(carbFormatter.string(from: activeCarbohydrates, for: .gram()))
+        cobLabel.setText(carbFormatter.string(from: activeCarbohydrates))
     }
 
     private func reloadCarbEntries() {
@@ -112,9 +114,9 @@ extension CarbEntryListController {
             total += entry.quantity.doubleValue(for: unit)
 
             row.textLabel.setText(timeFormatter.string(from: entry.startDate))
-            row.detailTextLabel.setText(carbFormatter.string(from: entry.quantity, for: unit))
+            row.detailTextLabel.setText(carbFormatter.string(from: entry.quantity))
         }
 
-        totalLabel.setText(carbFormatter.string(from: HKQuantity(unit: unit, doubleValue: total), for: unit))
+        totalLabel.setText(carbFormatter.string(from: HKQuantity(unit: unit, doubleValue: total)))
     }
 }

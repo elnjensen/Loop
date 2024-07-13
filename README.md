@@ -1,6 +1,6 @@
 # Loop for iOS
 
-![App Icon](/Loop/Assets.xcassets/AppIcon.appiconset/Icon-Small-40%402x.png?raw=true)
+![App Icon](/Loop/DerivedAssetsBase.xcassets/AppIcon.appiconset/Icon-Small-40%402x.png?raw=true)
 
 [![Build Status](https://travis-ci.org/LoopKit/Loop.svg?branch=master)](https://travis-ci.org/LoopKit/Loop)
 [![Join the chat at https://loop.zulipchat.com](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://loop.zulipchat.com)
@@ -30,7 +30,7 @@ Please understand that this project:
 
 Please visit the [Loop Docs](https://loopkit.github.io/loopdocs/) for installation, algorithm, and other details.
 
-For FAQs and other tips, refer to the [Wiki](https://github.com/LoopKit/Loop/wiki)
+For FAQs, how to contribute to open source aspects of Loop and other tips, refer to the [Wiki](https://github.com/LoopKit/Loop/wiki)
 
 (Note: there is also a tab for the Wiki at the top of this page)
 

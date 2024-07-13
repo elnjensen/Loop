@@ -81,7 +81,7 @@ private extension SKSpriteNode {
 }
 
 class GlucoseChartScene: SKScene {
-    let log = OSLog(category: "GlucoseChartScene")
+    let logger = Logger(category: "GlucoseChartScene")
 
     var textInsets = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5) {
         didSet {
@@ -99,8 +99,9 @@ class GlucoseChartScene: SKScene {
         }
     }
 
-    var visibleDuration = UserDefaults.standard.visibleDuration {
+    private(set) var visibleDuration = UserDefaults.standard.visibleDuration {
         didSet {
+            logger.log("New visible duration: \(self.visibleDuration.hours)h")
             setNeedsUpdate()
             UserDefaults.standard.visibleDuration = visibleDuration
         }
@@ -170,7 +171,7 @@ class GlucoseChartScene: SKScene {
     }
 
     override func update(_ currentTime: TimeInterval) {
-        log.default("update(_:)")
+        logger.debug("update(_:)")
 
         if needsUpdate {
             needsUpdate = false
@@ -185,12 +186,12 @@ class GlucoseChartScene: SKScene {
     override func didFinishUpdate() {
         let isPaused = self.isPaused
         let childNodesHaveActions = self.childNodesHaveActions
-        log.default("didFinishUpdate() needsUpdate: %d isPaused: %d childNodesHaveActions: %d", needsUpdate, isPaused, childNodesHaveActions)
+        logger.debug("didFinishUpdate() needsUpdate: \(self.needsUpdate) isPaused: \(isPaused) childNodesHaveActions: \(childNodesHaveActions)")
 
         super.didFinishUpdate()
 
         if !needsUpdate && !isPaused && !childNodesHaveActions {
-            log.default("didFinishUpdate() pausing")
+            logger.log("didFinishUpdate() pausing")
             self.isPaused = true
         }
     }
@@ -212,7 +213,7 @@ class GlucoseChartScene: SKScene {
         needsUpdate = true
 
         if isPaused {
-            log.default("setNeedsUpdate() unpausing")
+            logger.log("setNeedsUpdate() unpausing")
             isPaused = false
         }
     }
@@ -237,11 +238,10 @@ class GlucoseChartScene: SKScene {
         // Keep track of the nodes we started this pass with so we can expire obsolete nodes at the end
         var inactiveNodes = nodes
 
-        let activeOverride = data.activeScheduleOverride
-
+        let isOverrideActive = data.activePreMealOverride != nil || data.activeScheduleOverride != nil
         data.correctionRange?.quantityBetween(start: spannedInterval.start, end: spannedInterval.end).forEach { range in
             let (sprite, created) = getSprite(forHash: range.chartHashValue)
-            sprite.color = UIColor.glucose.withAlphaComponent(activeOverride != nil ? 0.2 : 0.3)
+            sprite.color = UIColor.glucose.withAlphaComponent(isOverrideActive ? 0.2 : 0.3)
             sprite.zPosition = NodePlane.ranges.zPosition
             sprite.move(to: scaler.rect(for: range, unit: unit), animated: !created)
             inactiveNodes.removeValue(forKey: range.chartHashValue)
@@ -250,30 +250,49 @@ class GlucoseChartScene: SKScene {
         // Make temporary overrides visually match what we do in the Loop app. This means that we have
         // one darker box which represents the duration of the override, but we have a second lighter box which
         // extends to the end of the visible window.
-        if let range = activeOverride, let rangeHashable = TemporaryScheduleOverrideHashable(range) {
-            let (sprite1, created) = getSprite(forHash: rangeHashable.chartHashValue)
+        func plotOverride(
+            _ override: TemporaryScheduleOverride,
+            pushingStartTo startDate: Date? = nil,
+            extendingToChartEnd shouldExtendToChartEnd: Bool
+        ) {
+            var override = override
+            if let startDate = startDate {
+                guard startDate < override.scheduledEndDate else {
+                    return
+                }
+
+                override.scheduledInterval = DateInterval(start: startDate, end: override.scheduledEndDate)
+            }
+
+            guard let overrideHashable = TemporaryScheduleOverrideHashable(override) else {
+                return
+            }
+
+            let (sprite1, created) = getSprite(forHash: overrideHashable.chartHashValue)
             sprite1.color = UIColor.glucose.withAlphaComponent(0.4)
             sprite1.zPosition = NodePlane.overrideRanges.zPosition
-            sprite1.move(to: scaler.rect(for: rangeHashable, unit: unit), animated: !created)
-            inactiveNodes.removeValue(forKey: rangeHashable.chartHashValue)
+            sprite1.move(to: scaler.rect(for: overrideHashable, unit: unit), animated: !created)
+            inactiveNodes.removeValue(forKey: overrideHashable.chartHashValue)
 
-            if rangeHashable.end < spannedInterval.end {
-                let extendedDuration = spannedInterval.end.timeIntervalSince(rangeHashable.start)
-                let extendedRange = TemporaryScheduleOverride(
-                    context: rangeHashable.override.context,
-                    settings: rangeHashable.override.settings,
-                    startDate: rangeHashable.start,
-                    duration: .finite(extendedDuration),
-                    enactTrigger: .local,
-                    syncIdentifier: UUID()
-                )
-                let extendedRangeHashable = TemporaryScheduleOverrideHashable(extendedRange)! // Target range already known to be non-nil
-                let (sprite2, created) = getSprite(forHash: extendedRangeHashable.chartHashValue)
+            if override.scheduledEndDate < spannedInterval.end, shouldExtendToChartEnd {
+                var extendedOverride = override
+                extendedOverride.duration = .finite(spannedInterval.end.timeIntervalSince(overrideHashable.start))
+                // Target range already known to be non-nil
+                let extendedOverrideHashable = TemporaryScheduleOverrideHashable(extendedOverride)!
+                let (sprite2, created) = getSprite(forHash: extendedOverrideHashable.chartHashValue)
                 sprite2.color = UIColor.glucose.withAlphaComponent(0.25)
                 sprite2.zPosition = NodePlane.overrideRanges.zPosition
-                sprite2.move(to: scaler.rect(for: extendedRangeHashable, unit: unit), animated: !created)
-                inactiveNodes.removeValue(forKey: extendedRangeHashable.chartHashValue)
+                sprite2.move(to: scaler.rect(for: extendedOverrideHashable, unit: unit), animated: !created)
+                inactiveNodes.removeValue(forKey: extendedOverrideHashable.chartHashValue)
             }
+        }
+
+        if let preMealOverride = data.activePreMealOverride {
+            plotOverride(preMealOverride, extendingToChartEnd: true)
+        }
+
+        if let override = data.activeScheduleOverride {
+            plotOverride(override, pushingStartTo: data.activePreMealOverride?.scheduledEndDate, extendingToChartEnd: data.activePreMealOverride == nil)
         }
 
         data.historicalGlucose?.filter { scaler.dates.contains($0.startDate) }.forEach {
@@ -316,5 +335,13 @@ class GlucoseChartScene: SKScene {
             node.removeFromParent()
             nodes.removeValue(forKey: hash)
         }
+    }
+
+    func decreaseVisibleDuration(by decrement: TimeInterval = .hours(1)) {
+        visibleDuration = max(.hours(2), visibleDuration - decrement)
+    }
+
+    func increaseVisibleDuration(by increment: TimeInterval = .hours(1)) {
+        visibleDuration = min(.hours(12), visibleDuration + increment)
     }
 }

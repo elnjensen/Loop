@@ -8,10 +8,17 @@
 
 import Foundation
 
-
 extension Bundle {
+    var fullVersionString: String {
+        return "\(shortVersionString) (\(version))"
+    }
+
     var shortVersionString: String {
         return object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
+    }
+
+    var version: String {
+        return object(forInfoDictionaryKey: "CFBundleVersion") as! String
     }
 
     var bundleDisplayName: String {
@@ -19,7 +26,7 @@ extension Bundle {
     }
 
     var localizedNameAndVersion: String {
-        return String(format: NSLocalizedString("%1$@ v%2$@", comment: "The format string for the app name and version number. (1: bundle name)(2: bundle version)"), bundleDisplayName, shortVersionString)
+        return String(format: NSLocalizedString("%1$@ v%2$@", comment: "The format string for the app name and version number. (1: bundle name)(2: bundle version)"), bundleDisplayName, fullVersionString)
     }
     
     private var mainAppBundleIdentifier: String? {
@@ -28,6 +35,10 @@ extension Bundle {
 
     var appGroupSuiteName: String {
         return object(forInfoDictionaryKey: "AppGroupIdentifier") as! String
+    }
+    
+    var appStoreURL: String? {
+        return object(forInfoDictionaryKey: "AppStoreURL") as? String
     }
 
     var isAppExtension: Bool {
@@ -42,23 +53,12 @@ extension Bundle {
         }
     }
     
-    var gitRevision: String? {
-        return object(forInfoDictionaryKey: "com-loopkit-Loop-git-revision") as? String
-    }
-    
-    var gitBranch: String? {
-        return object(forInfoDictionaryKey: "com-loopkit-Loop-git-branch") as? String
-    }
-    
-    var sourceRoot: String? {
-        return object(forInfoDictionaryKey: "com-loopkit-Loop-srcroot") as? String
-    }
-    
-    var buildDateString: String? {
-        return object(forInfoDictionaryKey: "com-loopkit-Loop-build-date") as? String
-    }
-
-    var xcodeVersion: String? {
-        return object(forInfoDictionaryKey: "com-loopkit-Loop-xcode-version") as? String
+    var localCacheDuration: TimeInterval {
+        guard let localCacheDurationDaysString = object(forInfoDictionaryKey: "LoopLocalCacheDurationDays") as? String,
+            let localCacheDurationDays = Double(localCacheDurationDaysString) else {
+                return .days(1)
+        }
+        return .days(localCacheDurationDays)
     }
 }
+

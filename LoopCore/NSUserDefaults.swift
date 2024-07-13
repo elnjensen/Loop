@@ -14,128 +14,66 @@ import HealthKit
 extension UserDefaults {
 
     private enum Key: String {
-        case basalRateSchedule = "com.loudnate.Naterade.BasalRateSchedule"
-        case carbRatioSchedule = "com.loudnate.Naterade.CarbRatioSchedule"
-        case insulinModelSettings = "com.loopkit.Loop.insulinModelSettings"
-        case loopSettings = "com.loopkit.Loop.loopSettings"
-        case insulinSensitivitySchedule = "com.loudnate.Naterade.InsulinSensitivitySchedule"
-        case overrideHistory = "com.tidepool.loopkit.overrideHistory"
+        case overrideHistory = "com.loopkit.overrideHistory"
+        case lastBedtimeQuery = "com.loopkit.Loop.lastBedtimeQuery"
+        case bedtime = "com.loopkit.Loop.bedtime"
+        case lastProfileExpirationAlertDate = "com.loopkit.Loop.lastProfileExpirationAlertDate"
+        case allowDebugFeatures = "com.loopkit.Loop.allowDebugFeatures"
+        case allowExperimentalFeatures = "com.loopkit.Loop.allowExperimentalFeatures"
+        case allowSimulators = "com.loopkit.Loop.allowSimulators"
+        case LastMissedMealNotification = "com.loopkit.Loop.lastMissedMealNotification"
+        case userRequestedLoopReset = "com.loopkit.Loop.userRequestedLoopReset"
     }
 
     public static let appGroup = UserDefaults(suiteName: Bundle.main.appGroupSuiteName)
 
-    public var basalRateSchedule: BasalRateSchedule? {
+    public var legacyBasalRateSchedule: BasalRateSchedule? {
         get {
-            if let rawValue = dictionary(forKey: Key.basalRateSchedule.rawValue) {
+            if let rawValue = dictionary(forKey: "com.loudnate.Naterade.BasalRateSchedule") {
                 return BasalRateSchedule(rawValue: rawValue)
             } else {
                 return nil
             }
         }
-        set {
-            set(newValue?.rawValue, forKey: Key.basalRateSchedule.rawValue)
-        }
     }
 
-    public var carbRatioSchedule: CarbRatioSchedule? {
+    public var legacyCarbRatioSchedule: CarbRatioSchedule? {
         get {
-            if let rawValue = dictionary(forKey: Key.carbRatioSchedule.rawValue) {
+            if let rawValue = dictionary(forKey: "com.loudnate.Naterade.CarbRatioSchedule") {
                 return CarbRatioSchedule(rawValue: rawValue)
             } else {
                 return nil
             }
         }
-        set {
-            set(newValue?.rawValue, forKey: Key.carbRatioSchedule.rawValue)
-        }
     }
 
-    public var insulinModelSettings: InsulinModelSettings? {
+    public var legacyDefaultRapidActingModel: ExponentialInsulinModelPreset? {
         get {
-            if let rawValue = dictionary(forKey: Key.insulinModelSettings.rawValue) {
-                return InsulinModelSettings(rawValue: rawValue)
-            } else {
-                // Migrate the version 0 case
-                let insulinActionDurationKey = "com.loudnate.Naterade.InsulinActionDuration"
-                defer {
-                    removeObject(forKey: insulinActionDurationKey)
-                }
-
-                let value = double(forKey: insulinActionDurationKey)
-                return value > 0 ? .walsh(WalshInsulinModel(actionDuration: value)) : nil
+            if let rawValue = string(forKey: "com.loopkit.Loop.defaultRapidActingModel") {
+                return ExponentialInsulinModelPreset(rawValue: rawValue)
             }
-        }
-        set {
-            set(newValue?.rawValue, forKey: Key.insulinModelSettings.rawValue)
+            
+            return nil
         }
     }
 
-    public var loopSettings: LoopSettings? {
+    public var legacyLoopSettings: LoopSettings? {
         get {
-            if let rawValue = dictionary(forKey: Key.loopSettings.rawValue) {
+            if let rawValue = dictionary(forKey: "com.loopkit.Loop.loopSettings") {
                 return LoopSettings(rawValue: rawValue)
-            } else {
-                // Migrate the version 0 case
-                defer {
-                    removeObject(forKey: "com.loudnate.Naterade.DosingEnabled")
-                    removeObject(forKey: "com.loudnate.Naterade.GlucoseTargetRangeSchedule")
-                    removeObject(forKey: "com.loudnate.Naterade.MaximumBasalRatePerHour")
-                    removeObject(forKey: "com.loudnate.Naterade.MaximumBolus")
-                    removeObject(forKey: "com.loopkit.Loop.MinimumBGGuard")
-                    removeObject(forKey: "com.loudnate.Loop.RetrospectiveCorrectionEnabled")
-                }
-
-                let glucoseTargetRangeSchedule: GlucoseRangeSchedule?
-                if let rawValue = dictionary(forKey: "com.loudnate.Naterade.GlucoseTargetRangeSchedule") {
-                    glucoseTargetRangeSchedule = GlucoseRangeSchedule(rawValue: rawValue)
-                } else {
-                    glucoseTargetRangeSchedule = nil
-                }
-
-                let suspendThreshold: GlucoseThreshold?
-                if let rawValue = dictionary(forKey: "com.loopkit.Loop.MinimumBGGuard") {
-                    suspendThreshold = GlucoseThreshold(rawValue: rawValue)
-                } else {
-                    suspendThreshold = nil
-                }
-
-                var maximumBasalRatePerHour: Double? = double(forKey: "com.loudnate.Naterade.MaximumBasalRatePerHour")
-                if maximumBasalRatePerHour! <= 0 {
-                    maximumBasalRatePerHour = nil
-                }
-
-                var maximumBolus: Double? = double(forKey: "com.loudnate.Naterade.MaximumBolus")
-                if maximumBolus! <= 0 {
-                    maximumBolus = nil
-                }
-
-                let settings = LoopSettings(
-                    dosingEnabled: bool(forKey: "com.loudnate.Naterade.DosingEnabled"),
-                    glucoseTargetRangeSchedule: glucoseTargetRangeSchedule,
-                    maximumBasalRatePerHour: maximumBasalRatePerHour,
-                    maximumBolus: maximumBolus,
-                    suspendThreshold: suspendThreshold
-                )
-                self.loopSettings = settings
-
-                return settings
-            }
-        }
-        set {
-            set(newValue?.rawValue, forKey: Key.loopSettings.rawValue)
-        }
-    }
-
-    public var insulinSensitivitySchedule: InsulinSensitivitySchedule? {
-        get {
-            if let rawValue = dictionary(forKey: Key.insulinSensitivitySchedule.rawValue) {
-                return InsulinSensitivitySchedule(rawValue: rawValue)
             } else {
                 return nil
             }
         }
-        set {
-            set(newValue?.rawValue, forKey: Key.insulinSensitivitySchedule.rawValue)
+    }
+
+    public var legacyInsulinSensitivitySchedule: InsulinSensitivitySchedule? {
+        get {
+            if let rawValue = dictionary(forKey: "com.loudnate.Naterade.InsulinSensitivitySchedule") {
+                return InsulinSensitivitySchedule(rawValue: rawValue)
+            } else {
+                return nil
+            }
         }
     }
 
@@ -150,5 +88,89 @@ extension UserDefaults {
         set {
             set(newValue?.rawValue, forKey: Key.overrideHistory.rawValue)
         }
+    }
+    
+    public var lastBedtimeQuery: Date? {
+        get {
+            return object(forKey: Key.lastBedtimeQuery.rawValue) as? Date
+        }
+        set {
+            set(newValue, forKey: Key.lastBedtimeQuery.rawValue)
+        }
+    }
+    
+    public var bedtime: Date? {
+        get {
+            return object(forKey: Key.bedtime.rawValue) as? Date
+        }
+        set {
+            set(newValue, forKey: Key.bedtime.rawValue)
+        }
+    }
+    
+    public var lastProfileExpirationAlertDate: Date? {
+        get {
+            return object(forKey: Key.lastProfileExpirationAlertDate.rawValue) as? Date
+        }
+        set {
+            set(newValue, forKey: Key.lastProfileExpirationAlertDate.rawValue)
+        }
+    }
+    
+    public var lastMissedMealNotification: MissedMealNotification? {
+        get {
+            let decoder = JSONDecoder()
+            guard let data = object(forKey: Key.LastMissedMealNotification.rawValue) as? Data else {
+                return nil
+            }
+            return try? decoder.decode(MissedMealNotification.self, from: data)
+        }
+        set {
+            do {
+                if let newValue = newValue {
+                    let encoder = JSONEncoder()
+                    let data = try encoder.encode(newValue)
+                    set(data, forKey: Key.LastMissedMealNotification.rawValue)
+                } else {
+                    set(nil, forKey: Key.LastMissedMealNotification.rawValue)
+                }
+            } catch {
+                assertionFailure("Unable to encode MissedMealNotification")
+            }
+        }
+    }
+    
+    public var allowDebugFeatures: Bool {
+        get {
+            bool(forKey: Key.allowDebugFeatures.rawValue)
+        }
+        set {
+            set(newValue, forKey: Key.allowDebugFeatures.rawValue)
+        }
+    }
+
+    public var allowExperimentalFeatures: Bool {
+        return bool(forKey: Key.allowExperimentalFeatures.rawValue)
+    }
+    
+    public var allowSimulators: Bool {
+        return bool(forKey: Key.allowSimulators.rawValue)
+    }
+    
+    public var userRequestedLoopReset: Bool {
+        get {
+            bool(forKey: Key.userRequestedLoopReset.rawValue)
+        }
+        set {
+            setValue(newValue, forKey: Key.userRequestedLoopReset.rawValue)
+        }
+    }
+
+    public func removeLegacyLoopSettings() {
+        removeObject(forKey: "com.loudnate.Naterade.BasalRateSchedule")
+        removeObject(forKey: "com.loudnate.Naterade.CarbRatioSchedule")
+        removeObject(forKey: "com.loudnate.Naterade.InsulinSensitivitySchedule")
+        removeObject(forKey: "com.loopkit.Loop.defaultRapidActingModel")
+        removeObject(forKey: "com.loopkit.Loop.loopSettings")
     }
 }

@@ -13,6 +13,7 @@ import Intents
 import os
 import os.log
 import UserNotifications
+import LoopKit
 
 
 final class ExtensionDelegate: NSObject, WKExtensionDelegate {
@@ -161,10 +162,10 @@ final class ExtensionDelegate: NSObject, WKExtensionDelegate {
             return
         }
 
-        if context.preferredGlucoseUnit == nil {
+        if context.displayGlucoseUnit == nil {
             let type = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
             loopManager.healthStore.preferredUnits(for: [type]) { (units, error) in
-                context.preferredGlucoseUnit = units[type]
+                context.displayGlucoseUnit = units[type]
 
                 DispatchQueue.main.async {
                     self.loopManager.updateContext(context)
@@ -225,6 +226,15 @@ extension ExtensionDelegate: WCSessionDelegate {
             } else {
                 log.error("Could not decode LoopSettingsUserInfo: %{public}@", userInfo)
             }
+        case SupportedBolusVolumesUserInfo.name:
+            guard let volumes = SupportedBolusVolumesUserInfo(rawValue: userInfo)?.supportedBolusVolumes else {
+                log.error("Could not decode SupportedBolusVolumesUserInfo: %{public}@", userInfo)
+                return
+            }
+
+            DispatchQueue.main.async {
+                self.loopManager.supportedBolusVolumes = volumes
+            }
         case "WatchContext":
             // WatchContext is the only userInfo type without a "name" key. This isn't a great heuristic.
             updateContext(userInfo)
@@ -236,16 +246,49 @@ extension ExtensionDelegate: WCSessionDelegate {
 
 
 extension ExtensionDelegate: UNUserNotificationCenterDelegate {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        switch response.actionIdentifier {
+        case UNNotificationDefaultActionIdentifier:
+            guard
+                response.notification.request.identifier == LoopNotificationCategory.missedMeal.rawValue,
+                let statusController = WKExtension.shared().visibleInterfaceController as? HUDInterfaceController
+            else {
+                break
+            }
+
+            let userInfo = response.notification.request.content.userInfo
+            // If we have info about a meal, the carb entry UI should reflect it
+            if
+                let mealTime = userInfo[LoopNotificationUserInfoKey.missedMealTime.rawValue] as? Date,
+                let carbAmount = userInfo[LoopNotificationUserInfoKey.missedMealCarbAmount.rawValue] as? Double
+            {
+                let missedEntry = NewCarbEntry(quantity: HKQuantity(unit: .gram(),
+                                                                         doubleValue: carbAmount),
+                                                    startDate: mealTime,
+                                                    foodType: nil,
+                                                    absorptionTime: nil)
+                statusController.addCarbs(initialEntry: missedEntry)
+            // Otherwise, just provide the ability to add carbs
+            } else {
+                statusController.addCarbs()
+            }
+        default:
+            break
+        }
+
+        completionHandler()
+    }
+    
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([.badge, .sound, .alert])
+        completionHandler([.badge, .sound, .list, .banner])
     }
 }
 
 
 extension ExtensionDelegate {
-    static let didBecomeActiveNotification = Notification.Name("ExtensionDelegate.didBecomeActive")
+    static let didBecomeActiveNotification = Notification.Name("com.loopkit.Loop.LoopWatch.didBecomeActive")
 
-    static let willResignActiveNotification = Notification.Name("ExtensionDelegate.willResignActive")
+    static let willResignActiveNotification = Notification.Name("com.loopkit.Loop.LoopWatch.willResignActive")
 
     /// Global shortcut to present an alert for a specific error out-of-context with a specific interface controller.
     ///

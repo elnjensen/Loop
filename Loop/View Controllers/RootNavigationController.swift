@@ -13,8 +13,21 @@ import LoopKitUI
 class RootNavigationController: UINavigationController {
 
     /// Its root view controller is always StatusTableViewController after loading
-    var rootViewController: StatusTableViewController! {
+    var statusTableViewController: StatusTableViewController! {
         return viewControllers.first as? StatusTableViewController
+    }
+    
+    func navigate(to deeplink: Deeplink) {
+        switch deeplink {
+        case .carbEntry:
+            statusTableViewController.presentCarbEntryScreen(nil)
+        case .preMeal:
+            statusTableViewController.togglePreMealMode()
+        case .bolus:
+            statusTableViewController.presentBolusScreen()
+        case .customPresets:
+            statusTableViewController.presentCustomPresets()
+        }
     }
 
     override func restoreUserActivityState(_ activity: NSUserActivity) {
@@ -27,26 +40,8 @@ class RootNavigationController: UINavigationController {
             if viewControllers.count > 1 {
                 popToRootViewController(animated: false)
             }
-        case NSUserActivity.newCarbEntryActivityType:
-            if let navVC = presentedViewController as? UINavigationController {
-                if let carbVC = navVC.topViewController as? CarbEntryEditViewController {
-                    carbVC.restoreUserActivityState(activity)
-                    return
-                } else {
-                    dismiss(animated: false, completion: nil)
-                }
-            }
-
-            if let carbVC = topViewController as? CarbAbsorptionViewController {
-                carbVC.restoreUserActivityState(activity)
-                return
-            } else if viewControllers.count > 1 {
-                popToRootViewController(animated: false)
-            }
-
-            fallthrough
         default:
-            rootViewController.restoreUserActivityState(activity)
+            statusTableViewController.restoreUserActivityState(activity)
         }
     }
 

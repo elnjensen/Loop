@@ -7,30 +7,31 @@
 
 import Foundation
 import LoopKit
+import LoopKitUI
 import MockKit
+import MockKitUI
 
-public struct AvailableDevice {
-    let identifier: String
-    let localizedTitle: String
-}
-
-
-let staticPumpManagers: [PumpManager.Type] = [
-    MockPumpManager.self,
+let staticPumpManagersByIdentifier: [String: PumpManagerUI.Type] = [
+    MockPumpManager.pluginIdentifier : MockPumpManager.self
 ]
 
-let staticPumpManagersByIdentifier: [String: PumpManager.Type] = staticPumpManagers.reduce(into: [:]) { (map, Type) in
-    map[Type.managerIdentifier] = Type
-}
-
-let availableStaticPumpManagers = staticPumpManagers.map { (Type) -> AvailableDevice in
-    return AvailableDevice(identifier: Type.managerIdentifier, localizedTitle: Type.localizedTitle)
+var availableStaticPumpManagers: [PumpManagerDescriptor] {
+    if FeatureFlags.allowSimulators {
+        return [
+            PumpManagerDescriptor(identifier: MockPumpManager.pluginIdentifier, localizedTitle: MockPumpManager.localizedTitle)
+        ]
+    } else {
+        return []
+    }
 }
 
 extension PumpManager {
-    var rawValue: [String: Any] {
+
+    typealias RawValue = [String: Any]
+    
+    var rawValue: RawValue {
         return [
-            "managerIdentifier": type(of: self).managerIdentifier,
+            "managerIdentifier": self.pluginIdentifier,
             "state": self.rawState
         ]
     }

@@ -7,16 +7,15 @@
 //
 
 import Foundation
+import LoopKit
 
 
 struct SetBolusUserInfo {
     let value: Double
     let startDate: Date
-
-    init(value: Double, startDate: Date) {
-        self.value = value
-        self.startDate = startDate
-    }
+    let contextDate: Date?
+    let carbEntry: NewCarbEntry?
+    let activationType: BolusActivationType
 }
 
 
@@ -28,23 +27,34 @@ extension SetBolusUserInfo: RawRepresentable {
 
     init?(rawValue: RawValue) {
         guard rawValue["v"] as? Int == type(of: self).version &&
-            rawValue["name"] as? String == SetBolusUserInfo.name,
-            let value = rawValue["bv"] as? Double,
-            let startDate = rawValue["sd"] as? Date else
-        {
+                rawValue["name"] as? String == SetBolusUserInfo.name,
+              let value = rawValue["bv"] as? Double,
+              let startDate = rawValue["sd"] as? Date,
+              let rawActivationType = rawValue["at"] as? BolusActivationType.RawValue,
+              let activationType = BolusActivationType(rawValue: rawActivationType)
+        else {
             return nil
         }
 
         self.value = value
         self.startDate = startDate
+        self.contextDate = rawValue["cd"] as? Date
+        self.carbEntry = (rawValue["ce"] as? NewCarbEntry.RawValue).flatMap(NewCarbEntry.init(rawValue:))
+        self.activationType = activationType
     }
 
     var rawValue: RawValue {
-        return [
+        var raw: RawValue = [
             "v": type(of: self).version,
             "name": SetBolusUserInfo.name,
             "bv": value,
             "sd": startDate
         ]
+
+        raw["cd"] = contextDate
+        raw["ce"] = carbEntry?.rawValue
+        raw["at"] = activationType.rawValue
+
+        return raw
     }
 }

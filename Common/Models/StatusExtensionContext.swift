@@ -20,11 +20,13 @@ struct NetBasalContext {
     let end: Date?
 }
 
-struct SensorDisplayableContext: SensorDisplayable {
+struct GlucoseDisplayableContext: GlucoseDisplayable {
     let isStateValid: Bool
     let stateDescription: String
     let trendType: GlucoseTrend?
+    let trendRate: HKQuantity?
     let isLocal: Bool
+    let glucoseRangeCategory: GlucoseRangeCategory?
 }
 
 struct GlucoseContext: GlucoseValue {
@@ -52,18 +54,54 @@ struct PredictedGlucoseContext {
     }
 }
 
+struct DeviceStatusHighlightContext: DeviceStatusHighlight {
+    var localizedMessage: String
+    var imageName: String
+    var state: DeviceStatusHighlightState
+    
+    init(localizedMessage: String,
+         imageName: String,
+         state: DeviceStatusHighlightState)
+    {
+        self.localizedMessage = localizedMessage
+        self.imageName = imageName
+        self.state = state
+    }
+    
+    init?(from deviceStatusHighlight: DeviceStatusHighlight?) {
+        guard let deviceStatusHighlight = deviceStatusHighlight else {
+            return nil
+        }
+        
+        self.init(localizedMessage: deviceStatusHighlight.localizedMessage,
+                  imageName: deviceStatusHighlight.imageName,
+                  state: deviceStatusHighlight.state)
+    }
+}
+
+struct DeviceLifecycleProgressContext: DeviceLifecycleProgress {
+    var percentComplete: Double
+    var progressState: DeviceLifecycleProgressState
+    
+    init(percentComplete: Double,
+         progressState: DeviceLifecycleProgressState)
+    {
+        self.percentComplete = percentComplete
+        self.progressState = progressState
+    }
+    
+    init?(from deviceLifecycleProgress: DeviceLifecycleProgress?) {
+        guard let deviceLifecycleProgress = deviceLifecycleProgress else {
+            return nil
+        }
+        
+        self.init(percentComplete: deviceLifecycleProgress.percentComplete,
+                  progressState: deviceLifecycleProgress.progressState)
+    }
+}
+
 extension NetBasalContext: RawRepresentable {
     typealias RawValue = [String: Any]
-
-    var rawValue: RawValue {
-        var value: RawValue = [
-            "rate": rate,
-            "percentage": percentage,
-            "start": start
-        ]
-        value["end"] = end
-        return value
-    }
 
     init?(rawValue: RawValue) {
         guard
@@ -79,27 +117,28 @@ extension NetBasalContext: RawRepresentable {
         self.start = start
         self.end = rawValue["end"] as? Date
     }
+    
+    var rawValue: RawValue {
+        var value: RawValue = [
+            "rate": rate,
+            "percentage": percentage,
+            "start": start
+        ]
+        value["end"] = end
+        return value
+    }
 }
 
-extension SensorDisplayableContext: RawRepresentable {
+extension GlucoseDisplayableContext: RawRepresentable {
     typealias RawValue = [String: Any]
 
-    var rawValue: RawValue {
-        var raw: RawValue = [
-            "isStateValid": isStateValid,
-            "stateDescription": stateDescription,
-            "isLocal": isLocal
-        ]
-        raw["trendType"] = trendType?.rawValue
-
-        return raw
-    }
-
-    init(_ other: SensorDisplayable) {
+    init(_ other: GlucoseDisplayable) {
         isStateValid = other.isStateValid
         stateDescription = other.stateDescription
         isLocal = other.isLocal
         trendType = other.trendType
+        trendRate = other.trendRate
+        glucoseRangeCategory = other.glucoseRangeCategory
     }
 
     init?(rawValue: RawValue) {
@@ -120,20 +159,38 @@ extension SensorDisplayableContext: RawRepresentable {
         } else {
             trendType = nil
         }
+        
+        if let trendRateValue = rawValue["trendRateValue"] as? Double {
+            trendRate = HKQuantity(unit: .milligramsPerDeciliterPerMinute, doubleValue: trendRateValue)
+        } else {
+            trendRate = nil
+        }
+
+        if let glucoseRangeCategoryRawValue = rawValue["glucoseRangeCategory"] as? GlucoseRangeCategory.RawValue {
+            glucoseRangeCategory = GlucoseRangeCategory(rawValue: glucoseRangeCategoryRawValue)
+        } else {
+            glucoseRangeCategory = nil
+        }
+    }
+    
+    var rawValue: RawValue {
+        var raw: RawValue = [
+            "isStateValid": isStateValid,
+            "stateDescription": stateDescription,
+            "isLocal": isLocal
+        ]
+        raw["trendType"] = trendType?.rawValue
+        if let trendRate = trendRate {
+            raw["trendRateValue"] = trendRate.doubleValue(for: HKUnit.milligramsPerDeciliterPerMinute)
+        }
+        raw["glucoseRangeCategory"] = glucoseRangeCategory?.rawValue
+
+        return raw
     }
 }
 
 extension PredictedGlucoseContext: RawRepresentable {
     typealias RawValue = [String: Any]
-
-    var rawValue: RawValue {
-        return [
-            "values": values,
-            "unit": unit.unitString,
-            "startDate": startDate,
-            "interval": interval
-        ]
-    }
 
     init?(rawValue: RawValue) {
         guard
@@ -150,27 +207,85 @@ extension PredictedGlucoseContext: RawRepresentable {
         self.startDate = startDate
         self.interval = interval
     }
+    
+    var rawValue: RawValue {
+        return [
+            "values": values,
+            "unit": unit.unitString,
+            "startDate": startDate,
+            "interval": interval
+        ]
+    }
 }
 
-struct PumpManagerHUDViewsContext: RawRepresentable {
+extension DeviceStatusHighlightContext: RawRepresentable {
     typealias RawValue = [String: Any]
 
-    let pumpManagerHUDViewsRawValue: PumpManagerHUDViewsRawValue
+    init?(rawValue: RawValue) {
+        guard let localizedMessage = rawValue["localizedMessage"] as? String,
+            let imageName = rawValue["imageName"] as? String,
+            let rawState = rawValue["state"] as? DeviceStatusHighlightState.RawValue,
+            let state = DeviceStatusHighlightState(rawValue: rawState) else
+        {
+            return nil
+        }
 
-    init(pumpManagerHUDViewsRawValue: PumpManagerHUDViewsRawValue) {
-        self.pumpManagerHUDViewsRawValue = pumpManagerHUDViewsRawValue
+        self.localizedMessage = localizedMessage
+        self.imageName = imageName
+        self.state = state
+    }
+    
+    var rawValue: RawValue {
+        return [
+            "localizedMessage": localizedMessage,
+            "imageName": imageName,
+            "state": state.rawValue,
+        ]
+    }
+}
+
+extension DeviceLifecycleProgressContext: RawRepresentable {
+    typealias RawValue = [String: Any]
+
+    init?(rawValue: RawValue) {
+        guard let percentComplete = rawValue["percentComplete"] as? Double,
+            let rawProgressState = rawValue["progressState"] as? DeviceLifecycleProgressState.RawValue,
+            let progressState = DeviceLifecycleProgressState(rawValue: rawProgressState) else
+        {
+            return nil
+        }
+
+        self.percentComplete = percentComplete
+        self.progressState = progressState
+    }
+    
+    var rawValue: RawValue {
+        return [
+            "percentComplete": percentComplete,
+            "progressState": progressState.rawValue,
+        ]
+    }
+}
+
+struct PumpManagerHUDViewContext: RawRepresentable {
+    typealias RawValue = [String: Any]
+
+    let pumpManagerHUDViewRawValue: PumpManagerHUDViewRawValue
+
+    init(pumpManagerHUDViewRawValue: PumpManagerHUDViewRawValue) {
+        self.pumpManagerHUDViewRawValue = pumpManagerHUDViewRawValue
     }
     
     init?(rawValue: RawValue) {
-        if let pumpManagerHUDViewsRawValue = rawValue["pumpManagerHUDViewsRawValue"] as? PumpManagerHUDViewsRawValue {
-            self.pumpManagerHUDViewsRawValue = pumpManagerHUDViewsRawValue
+        if let pumpManagerHUDViewRawValue = rawValue["pumpManagerHUDViewRawValue"] as? PumpManagerHUDViewRawValue {
+            self.pumpManagerHUDViewRawValue = pumpManagerHUDViewRawValue
         } else {
             return nil
         }
     }
     
     var rawValue: RawValue {
-        return ["pumpManagerHUDViewsRawValue": pumpManagerHUDViewsRawValue]
+        return ["pumpManagerHUDViewRawValue": pumpManagerHUDViewRawValue]
     }
 }
 
@@ -180,11 +295,21 @@ struct StatusExtensionContext: RawRepresentable {
 
     var predictedGlucose: PredictedGlucoseContext?
     var lastLoopCompleted: Date?
+    var createdAt: Date?
+    var isClosedLoop: Bool?
+    var preMealPresetAllowed: Bool?
+    var preMealPresetActive: Bool?
+    var customPresetActive: Bool?
     var netBasal: NetBasalContext?
     var batteryPercentage: Double?
     var reservoirCapacity: Double?
-    var sensor: SensorDisplayableContext?
-    var pumpManagerHUDViewsContext: PumpManagerHUDViewsContext?
+    var glucoseDisplay: GlucoseDisplayableContext?
+    var pumpManagerHUDViewContext: PumpManagerHUDViewContext?
+    var pumpStatusHighlightContext: DeviceStatusHighlightContext?
+    var pumpLifecycleProgressContext: DeviceLifecycleProgressContext?
+    var cgmStatusHighlightContext: DeviceStatusHighlightContext?
+    var cgmLifecycleProgressContext: DeviceLifecycleProgressContext?
+    var carbsOnBoard: Double?
     
     init() { }
     
@@ -202,15 +327,37 @@ struct StatusExtensionContext: RawRepresentable {
         }
 
         lastLoopCompleted = rawValue["lastLoopCompleted"] as? Date
+        createdAt = rawValue["createdAt"] as? Date
+        isClosedLoop = rawValue["isClosedLoop"] as? Bool
+        preMealPresetAllowed = rawValue["preMealPresetAllowed"] as? Bool
+        preMealPresetActive = rawValue["preMealPresetActive"] as? Bool
+        customPresetActive = rawValue["customPresetActive"] as? Bool
         batteryPercentage = rawValue["batteryPercentage"] as? Double
         reservoirCapacity = rawValue["reservoirCapacity"] as? Double
+        carbsOnBoard = rawValue["carbsOnBoard"] as? Double
 
-        if let rawValue = rawValue["sensor"] as? SensorDisplayableContext.RawValue {
-            sensor = SensorDisplayableContext(rawValue: rawValue)
+        if let rawValue = rawValue["glucoseDisplay"] as? GlucoseDisplayableContext.RawValue {
+            glucoseDisplay = GlucoseDisplayableContext(rawValue: rawValue)
         }
         
-        if let rawPumpManagerHUDViewsContext = rawValue["pumpManagerHUDViewsContext"] as? PumpManagerHUDViewsContext.RawValue {
-            pumpManagerHUDViewsContext = PumpManagerHUDViewsContext(rawValue: rawPumpManagerHUDViewsContext)
+        if let rawPumpManagerHUDViewContext = rawValue["pumpManagerHUDViewContext"] as? PumpManagerHUDViewContext.RawValue {
+            pumpManagerHUDViewContext = PumpManagerHUDViewContext(rawValue: rawPumpManagerHUDViewContext)
+        }
+        
+        if let rawPumpStatusHighlightContext = rawValue["pumpStatusHighlightContext"] as? DeviceStatusHighlightContext.RawValue {
+            pumpStatusHighlightContext = DeviceStatusHighlightContext(rawValue: rawPumpStatusHighlightContext)
+        }
+        
+        if let rawPumpLifecycleProgressContext = rawValue["pumpLifecycleProgressContext"] as? DeviceLifecycleProgressContext.RawValue {
+            pumpLifecycleProgressContext = DeviceLifecycleProgressContext(rawValue: rawPumpLifecycleProgressContext)
+        }
+        
+        if let rawCGMStatusHighlightContext = rawValue["cgmStatusHighlightContext"] as? DeviceStatusHighlightContext.RawValue {
+            cgmStatusHighlightContext = DeviceStatusHighlightContext(rawValue: rawCGMStatusHighlightContext)
+        }
+        
+        if let rawCGMLifecycleProgressContext = rawValue["cgmLifecycleProgressContext"] as? DeviceLifecycleProgressContext.RawValue {
+            cgmLifecycleProgressContext = DeviceLifecycleProgressContext(rawValue: rawCGMLifecycleProgressContext)
         }
     }
     
@@ -221,11 +368,21 @@ struct StatusExtensionContext: RawRepresentable {
 
         raw["predictedGlucose"] = predictedGlucose?.rawValue
         raw["lastLoopCompleted"] = lastLoopCompleted
+        raw["createdAt"] = createdAt
+        raw["isClosedLoop"] = isClosedLoop
+        raw["preMealPresetAllowed"] = preMealPresetAllowed
+        raw["preMealPresetActive"] = preMealPresetActive
+        raw["customPresetActive"] = customPresetActive
         raw["netBasal"] = netBasal?.rawValue
         raw["batteryPercentage"] = batteryPercentage
         raw["reservoirCapacity"] = reservoirCapacity
-        raw["sensor"] = sensor?.rawValue
-        raw["pumpManagerHUDViewsContext"] = pumpManagerHUDViewsContext?.rawValue
+        raw["glucoseDisplay"] = glucoseDisplay?.rawValue
+        raw["pumpManagerHUDViewContext"] = pumpManagerHUDViewContext?.rawValue
+        raw["pumpStatusHighlightContext"] = pumpStatusHighlightContext?.rawValue
+        raw["pumpLifecycleProgressContext"] = pumpLifecycleProgressContext?.rawValue
+        raw["cgmStatusHighlightContext"] = cgmStatusHighlightContext?.rawValue
+        raw["cgmLifecycleProgressContext"] = cgmLifecycleProgressContext?.rawValue
+        raw["carbsOnBoard"] = carbsOnBoard
         
         return raw
     }

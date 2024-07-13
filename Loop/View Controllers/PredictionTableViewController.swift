@@ -12,6 +12,7 @@ import LoopKit
 import LoopKitUI
 import LoopUI
 import UIKit
+import os.log
 
 
 private extension RefreshContext {
@@ -19,7 +20,8 @@ private extension RefreshContext {
 }
 
 
-class PredictionTableViewController: ChartsTableViewController, IdentifiableClass {
+class PredictionTableViewController: LoopChartsTableViewController, IdentifiableClass {
+    private let log = OSLog(category: "PredictionTableViewController")
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,7 +29,7 @@ class PredictionTableViewController: ChartsTableViewController, IdentifiableClas
         tableView.rowHeight = UITableView.automaticDimension
         tableView.cellLayoutMarginsFollowReadableWidth = true
 
-        glucoseChart.glucoseDisplayRange = HKQuantity(unit: .milligramsPerDeciliter, doubleValue: 60)...HKQuantity(unit: .milligramsPerDeciliter, doubleValue: 200)
+        glucoseChart.glucoseDisplayRange = LoopConstants.glucoseChartDefaultDisplayRangeWide
 
         let notificationCenter = NotificationCenter.default
 
@@ -46,7 +48,7 @@ class PredictionTableViewController: ChartsTableViewController, IdentifiableClas
 
                     self?.reloadData(animated: true)
                 }
-            }
+            },
         ]
     }
 
@@ -85,13 +87,14 @@ class PredictionTableViewController: ChartsTableViewController, IdentifiableClas
         }
     }
 
-    let glucoseChart = PredictedGlucoseChart()
+    let glucoseChart = PredictedGlucoseChart(yAxisStepSizeMGDLOverride: FeatureFlags.predictedGlucoseChartClampEnabled ? 40 : nil)
 
     override func createChartsManager() -> ChartsManager {
-        return ChartsManager(colors: .default, settings: .default, charts: [glucoseChart], traitCollection: traitCollection)
+        return ChartsManager(colors: .primary, settings: .default, charts: [glucoseChart], traitCollection: traitCollection)
     }
 
     override func glucoseUnitDidChange() {
+        self.log.debug("[reloadData] for HealthKit unit preference change")
         refreshContext = RefreshContext.all
     }
 
@@ -106,13 +109,19 @@ class PredictionTableViewController: ChartsTableViewController, IdentifiableClas
         chartStartDate = calendar.nextDate(after: date, matching: components, matchingPolicy: .strict, direction: .backward) ?? date
 
         let reloadGroup = DispatchGroup()
-        var glucoseValues: [StoredGlucoseSample]?
+        var glucoseSamples: [StoredGlucoseSample]?
         var totalRetrospectiveCorrection: HKQuantity?
 
         if self.refreshContext.remove(.glucose) != nil {
             reloadGroup.enter()
-            self.deviceManager.loopManager.glucoseStore.getCachedGlucoseSamples(start: self.chartStartDate) { (values) -> Void in
-                glucoseValues = values
+            deviceManager.glucoseStore.getGlucoseSamples(start: self.chartStartDate, end: nil) { (result) -> Void in
+                switch result {
+                case .failure(let error):
+                    self.log.error("Failure getting glucose samples: %{public}@", String(describing: error))
+                    glucoseSamples = nil
+                case .success(let samples):
+                    glucoseSamples = samples
+                }
                 reloadGroup.leave()
             }
         }
@@ -120,13 +129,13 @@ class PredictionTableViewController: ChartsTableViewController, IdentifiableClas
         // For now, do this every time
         _ = self.refreshContext.remove(.status)
         reloadGroup.enter()
-        self.deviceManager.loopManager.getLoopState { (manager, state) in
+        deviceManager.loopManager.getLoopState { (manager, state) in
             self.retrospectiveGlucoseDiscrepancies = state.retrospectiveGlucoseDiscrepancies
             totalRetrospectiveCorrection = state.totalRetrospectiveCorrection
-            self.glucoseChart.setPredictedGlucoseValues(state.predictedGlucose ?? [])
+            self.glucoseChart.setPredictedGlucoseValues(state.predictedGlucoseIncludingPendingInsulin ?? [])
 
             do {
-                let glucose = try state.predictGlucose(using: self.selectedInputs)
+                let glucose = try state.predictGlucose(using: self.selectedInputs, includingPendingInsulin: true)
                 self.glucoseChart.setAlternatePredictedGlucoseValues(glucose)
             } catch {
                 self.refreshContext.update(with: .status)
@@ -147,8 +156,8 @@ class PredictionTableViewController: ChartsTableViewController, IdentifiableClas
         }
 
         reloadGroup.notify(queue: .main) {
-            if let glucoseValues = glucoseValues {
-                self.glucoseChart.setGlucoseValues(glucoseValues)
+            if let glucoseSamples = glucoseSamples {
+                self.glucoseChart.setGlucoseValues(glucoseSamples)
             }
             self.charts.invalidateChart(atIndex: 0)
 
@@ -188,7 +197,7 @@ class PredictionTableViewController: ChartsTableViewController, IdentifiableClas
 
     private var eventualGlucoseDescription: String?
 
-    private var availableInputs: [PredictionInputEffect] = [.carbs, .insulin, .momentum, .retrospection]
+    private var availableInputs: [PredictionInputEffect] = [.carbs, .insulin, .momentum, .retrospection, .suspend]
 
     private var selectedInputs = PredictionInputEffect.all
 
@@ -210,12 +219,12 @@ class PredictionTableViewController: ChartsTableViewController, IdentifiableClas
         case .charts:
             let cell = tableView.dequeueReusableCell(withIdentifier: ChartTableViewCell.className, for: indexPath) as! ChartTableViewCell
             cell.contentView.layoutMargins.left = tableView.separatorInset.left
-            cell.chartContentView.chartGenerator = { [weak self] (frame) in
+            cell.setChartGenerator(generator: { [weak self] (frame) in
                 return self?.charts.chart(atIndex: 0, frame: frame)?.view
-            }
+            })
 
             self.tableView(tableView, updateTitleFor: cell, at: indexPath)
-            cell.titleLabel?.textColor = UIColor.secondaryLabelColor
+            cell.setTitleTextColor(color: UIColor.secondaryLabel)
             cell.selectionStyle = .none
 
             cell.addGestureRecognizer(charts.gestureRecognizer!)
@@ -234,9 +243,9 @@ class PredictionTableViewController: ChartsTableViewController, IdentifiableClas
         }
 
         if let eventualGlucose = eventualGlucoseDescription {
-            cell.titleLabel?.text = String(format: NSLocalizedString("Eventually %@", comment: "The subtitle format describing eventual glucose. (1: localized glucose value description)"), eventualGlucose)
+            cell.setTitleLabelText(label: String(format: NSLocalizedString("Eventually %@", comment: "The subtitle format describing eventual glucose. (1: localized glucose value description)"), eventualGlucose))
         } else {
-            cell.titleLabel?.text = SettingsTableViewCell.NoValueString
+            cell.setTitleLabelText(label: SettingsTableViewCell.NoValueString)
         }
     }
 
@@ -254,22 +263,38 @@ class PredictionTableViewController: ChartsTableViewController, IdentifiableClas
 
         if input == .retrospection,
             let lastDiscrepancy = retrospectiveGlucoseDiscrepancies?.last,
-            let currentGlucose = self.deviceManager.loopManager.glucoseStore.latestGlucose
+            let currentGlucose = deviceManager.glucoseStore.latestGlucose
         {
-            let formatter = QuantityFormatter()
-            formatter.setPreferredNumberFormatter(for: glucoseChart.glucoseUnit)
+            let formatter = QuantityFormatter(for: glucoseChart.glucoseUnit)
             let predicted = HKQuantity(unit: glucoseChart.glucoseUnit, doubleValue: currentGlucose.quantity.doubleValue(for: glucoseChart.glucoseUnit) - lastDiscrepancy.quantity.doubleValue(for: glucoseChart.glucoseUnit))
-            var values = [predicted, currentGlucose.quantity].map { formatter.string(from: $0, for: glucoseChart.glucoseUnit) ?? "?" }
+            var values = [predicted, currentGlucose.quantity].map { formatter.string(from: $0) ?? "?" }
             formatter.numberFormatter.positivePrefix = formatter.numberFormatter.plusSign
-            values.append(formatter.string(from: lastDiscrepancy.quantity, for: glucoseChart.glucoseUnit) ?? "?")
+            values.append(formatter.string(from: lastDiscrepancy.quantity) ?? "?")
 
             let retro = String(
-                format: NSLocalizedString("prediction-description-retrospective-correction", comment: "Format string describing retrospective glucose prediction comparison. (1: Predicted glucose)(2: Actual glucose)(3: difference)"),
+                format: NSLocalizedString("Predicted: %1$@\nActual: %2$@ (%3$@)", comment: "Format string describing retrospective glucose prediction comparison. (1: Predicted glucose)(2: Actual glucose)(3: difference)"),
                 values[0], values[1], values[2]
             )
-
-            // Standard retrospective correction
-            subtitleText = String(format: "%@\n%@", subtitleText, retro)
+            let isIntegralRetrospectiveCorrectionEnabled = UserDefaults.standard.integralRetrospectiveCorrectionEnabled
+            
+            if isIntegralRetrospectiveCorrectionEnabled {
+                var integralEffectDisplay = "?"
+                var totalEffectDisplay = "?"
+                if let totalEffect = self.totalRetrospectiveCorrection {
+                    let integralEffectValue = totalEffect.doubleValue(for: glucoseChart.glucoseUnit) - lastDiscrepancy.quantity.doubleValue(for: glucoseChart.glucoseUnit)
+                    let integralEffect = HKQuantity(unit: glucoseChart.glucoseUnit, doubleValue: integralEffectValue)
+                    integralEffectDisplay = formatter.string(from: integralEffect) ?? "?"
+                    totalEffectDisplay = formatter.string(from: totalEffect) ?? "?"
+                }
+                let integralRetro = String(
+                    format: NSLocalizedString("prediction-description-integral-retrospective-correction", comment: "Format string describing integral retrospective correction. (1: Integral glucose effect)(2: Total glucose effect)"),
+                    integralEffectDisplay, totalEffectDisplay
+                )
+                subtitleText = String(format: "%@\n%@", retro, integralRetro)
+            } else {
+                subtitleText = String(format: "%@\n%@", subtitleText, retro)
+            }
+        
         }
 
         cell.subtitleLabel?.text = subtitleText

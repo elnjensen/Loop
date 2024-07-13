@@ -14,13 +14,20 @@ import LoopKit
 final class WatchContext: RawRepresentable {
     typealias RawValue = [String: Any]
 
-    private let version = 4
+    private let version = 5
 
-    var preferredGlucoseUnit: HKUnit?
+    var creationDate = Date()
+
+    var displayGlucoseUnit: HKUnit?
 
     var glucose: HKQuantity?
-    var glucoseTrendRawValue: Int?
+    var glucoseCondition: GlucoseCondition?
+    var glucoseTrend: GlucoseTrend?
+    var glucoseTrendRate: HKQuantity?
     var glucoseDate: Date?
+    var glucoseIsDisplayOnly: Bool?
+    var glucoseWasUserEntered: Bool?
+    var glucoseSyncIdentifier: String?
 
     var predictedGlucose: WatchPredictedGlucose?
     var eventualGlucose: HKQuantity? {
@@ -32,6 +39,8 @@ final class WatchContext: RawRepresentable {
     var lastNetTempBasalDate: Date?
     var recommendedBolusDose: Double?
 
+    var potentialCarbEntry: NewCarbEntry?
+
     var cob: Double?
     var iob: Double?
     var reservoir: Double?
@@ -40,24 +49,39 @@ final class WatchContext: RawRepresentable {
 
     var cgmManagerState: CGMManager.RawStateValue?
 
-    init() {
-    }
+    var isClosedLoop: Bool?
+    
+    init() {}
 
     required init?(rawValue: RawValue) {
-        guard rawValue["v"] as? Int == version else {
+        guard rawValue["v"] as? Int == version, let creationDate = rawValue["cd"] as? Date else {
             return nil
         }
 
+        self.creationDate = creationDate
+        isClosedLoop = rawValue["cl"] as? Bool
+
         if let unitString = rawValue["gu"] as? String {
-            preferredGlucoseUnit = HKUnit(from: unitString)
+            displayGlucoseUnit = HKUnit(from: unitString)
         }
-        let unit = preferredGlucoseUnit ?? .milligramsPerDeciliter
+        let unit = displayGlucoseUnit ?? .milligramsPerDeciliter
         if let glucoseValue = rawValue["gv"] as? Double {
             glucose = HKQuantity(unit: unit, doubleValue: glucoseValue)
         }
 
-        glucoseTrendRawValue = rawValue["gt"] as? Int
+        if let rawGlucoseCondition = rawValue["gc"] as? GlucoseCondition.RawValue {
+            glucoseCondition = GlucoseCondition(rawValue: rawGlucoseCondition)
+        }
+        if let rawGlucoseTrend = rawValue["gt"] as? GlucoseTrend.RawValue {
+            glucoseTrend = GlucoseTrend(rawValue: rawGlucoseTrend)
+        }
+        if let glucoseTrendRateValue = rawValue["gtrv"] as? Double {
+            glucoseTrendRate = HKQuantity(unit: .milligramsPerDeciliterPerMinute, doubleValue: glucoseTrendRateValue)
+        }
         glucoseDate = rawValue["gd"] as? Date
+        glucoseIsDisplayOnly = rawValue["gdo"] as? Bool
+        glucoseWasUserEntered = rawValue["gue"] as? Bool
+        glucoseSyncIdentifier = rawValue["gs"] as? String
         iob = rawValue["iob"] as? Double
         reservoir = rawValue["r"] as? Double
         reservoirPercentage = rawValue["rp"] as? Double
@@ -67,6 +91,9 @@ final class WatchContext: RawRepresentable {
         lastNetTempBasalDose = rawValue["ba"] as? Double
         lastNetTempBasalDate = rawValue["bad"] as? Date
         recommendedBolusDose = rawValue["rbo"] as? Double
+        if let rawPotentialCarbEntry = rawValue["pce"] as? NewCarbEntry.RawValue {
+            potentialCarbEntry = NewCarbEntry(rawValue: rawPotentialCarbEntry)
+        }
         cob = rawValue["cob"] as? Double
 
         cgmManagerState = rawValue["cgmManagerState"] as? CGMManager.RawStateValue
@@ -78,27 +105,39 @@ final class WatchContext: RawRepresentable {
 
     var rawValue: RawValue {
         var raw: [String: Any] = [
-            "v": version
+            "v": version,
+            "cd": creationDate
         ]
 
         raw["ba"] = lastNetTempBasalDose
         raw["bad"] = lastNetTempBasalDate
         raw["bp"] = batteryPercentage
+        raw["cl"] = isClosedLoop
 
         raw["cgmManagerState"] = cgmManagerState
 
         raw["cob"] = cob
 
-        let unit = preferredGlucoseUnit ?? .milligramsPerDeciliter
-        raw["gu"] = preferredGlucoseUnit?.unitString
+        let unit = displayGlucoseUnit ?? .milligramsPerDeciliter
+        raw["gu"] = displayGlucoseUnit?.unitString
         raw["gv"] = glucose?.doubleValue(for: unit)
 
-        raw["gt"] = glucoseTrendRawValue
+        raw["gc"] = glucoseCondition?.rawValue
+        raw["gt"] = glucoseTrend?.rawValue
+        if let glucoseTrendRate = glucoseTrendRate {
+            let unitPerMinute = unit.unitDivided(by: .minute())
+            raw["gtru"] = unitPerMinute.unitString
+            raw["gtrv"] = glucoseTrendRate.doubleValue(for: unitPerMinute)
+        }
         raw["gd"] = glucoseDate
+        raw["gdo"] = glucoseIsDisplayOnly
+        raw["gue"] = glucoseWasUserEntered
+        raw["gs"] = glucoseSyncIdentifier
         raw["iob"] = iob
         raw["ld"] = loopLastRunDate
         raw["r"] = reservoir
         raw["rbo"] = recommendedBolusDose
+        raw["pce"] = potentialCarbEntry?.rawValue
         raw["rp"] = reservoirPercentage
 
         raw["pg"] = predictedGlucose?.rawValue
@@ -115,5 +154,21 @@ extension WatchContext {
         } else {
             return true
         }
+    }
+}
+
+extension WatchContext {
+    var newGlucoseSample: NewGlucoseSample? {
+        if let quantity = glucose, let date = glucoseDate, let syncIdentifier = glucoseSyncIdentifier {
+            return NewGlucoseSample(date: date,
+                                    quantity: quantity,
+                                    condition: glucoseCondition,
+                                    trend: glucoseTrend,
+                                    trendRate: glucoseTrendRate,
+                                    isDisplayOnly: glucoseIsDisplayOnly ?? false,
+                                    wasUserEntered: glucoseWasUserEntered ?? false,
+                                    syncIdentifier: syncIdentifier, syncVersion: 0)
+        }
+        return nil
     }
 }
