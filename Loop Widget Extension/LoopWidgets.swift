@@ -13,8 +13,7 @@ struct LoopWidgets: WidgetBundle {
 
     @WidgetBundleBuilder
     var body: some Widget {
-        if #available(iOS 16.1, *) {
-            SystemStatusWidget()
-        }
+        SystemStatusWidget()
+        GlucoseLiveActivityConfiguration()
     }
 }
